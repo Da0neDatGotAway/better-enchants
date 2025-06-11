@@ -55,7 +55,7 @@ public class FullyBufferedMultiBufferSourceMixin {
         {
             unWrappedLayer = tryUnwrap(layer);
 
-            if (!hasAddedEnchantments && (unWrappedLayer == RenderLayer.getGlint())) {
+            if (!hasAddedEnchantments && (unWrappedLayer == RenderLayer.getGlint() || unWrappedLayer == RenderLayer.getArmorEntityGlint() || unWrappedLayer == RenderLayer.getEntityGlint())) {
                 hasAddedEnchantments = true;
                 duplicate.addAll(maskLayers);
             }

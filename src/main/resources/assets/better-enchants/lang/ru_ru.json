@@ -1,0 +1,40 @@
+{
+  "title.betterenchants.config": "Конфигурация BetterEnchants",
+
+  "category.betterenchants.render": "Рендеринг",
+  "category.betterenchants.armor": "Броня",
+  "category.betterenchants.special": "Особые предметы",
+  "category.betterenchants.uvs": "UV координаты",
+
+  "option.betterenchants.render.enabled": "Основной рендеринг",
+  "option.betterenchants.render.solid": "Использовать сплошной контур",
+  "option.betterenchants.render.color": "Цвет контура",
+  "option.betterenchants.render.size": "Размер контура",
+
+  "option.betterenchants.armor.render": "Рендеринг",
+  "option.betterenchants.armor.solid": "Использовать сплошной контур",
+  "option.betterenchants.armor.originaluv": "Использовать оригинальные UV",
+  "option.betterenchants.armor.doubleside": "Рендерить с обеих сторон",
+
+  "option.betterenchants.special.render": "Рендеринг",
+  "option.betterenchants.special.solid": "Использовать сплошной контур",
+  "option.betterenchants.special.originaluv": "Использовать оригинальные UV",
+  "option.betterenchants.uvs.u": "U",
+  "option.betterenchants.uvs.v": "V",
+
+  "tooltip.betterenchants.render.enabled": "Включает/выключает весь рендеринг.",
+  "tooltip.betterenchants.render.solid": "Переключает между сплошными контурами и мерцанием зачарований. Эта настройка не влияет на броню и особые предметы.",
+  "tooltip.betterenchants.render.color": "Цвет контура при использовании сплошного рендеринга. Глобальная настройка для всех переключателей сплошного контура.",
+  "tooltip.betterenchants.render.size": "Размер эффекта контура. Произвольные единицы измерения.",
+
+  "tooltip.betterenchants.armor.render": "Рендерить ли эффект на надетой броне.",
+  "tooltip.betterenchants.armor.solid": "Переключает между сплошными контурами и мерцанием зачарований. Эффект зачарования почти незаметен при отключении без кастомного шейдера зачарований",
+  "tooltip.betterenchants.armor.doubleside": "Рендерить ли контур на внутренней стороне шлема. Возможно, стоит отключить это с некоторыми модами или ресурспаками.",
+
+  "tooltip.betterenchants.special.render": "Рендерить ли эффект на особых предметах. Особые предметы - это предметы, которые используют отдельный код рендеринга (например, трезубец, шалкер-бокс, щит).",
+  "tooltip.betterenchants.special.solid1": "Переключает между сплошными контурами и мерцанием зачарований.",
+  "tooltip.betterenchants.special.originaluv": "Использовать ли оригинальные UV предмета. Иначе используются UV, указанные в конфигурации. Полезно для зашумленных или сломанных UV.",
+
+  "tooltip.betterenchants.uvs.u": "Резервное значение UV координаты U.",
+  "tooltip.betterenchants.uvs.v": "Резервное значение UV координаты V."
+}

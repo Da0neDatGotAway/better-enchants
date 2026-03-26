@@ -2,13 +2,10 @@ package net.enchantoutline;
 
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import net.caffeinemc.mods.sodium.client.util.Int2;
 import net.enchantoutline.config.EnchantmentOutlineConfig;
 import net.enchantoutline.config.ItemOverride;
 import net.enchantoutline.events.*;
-import net.enchantoutline.events.sodium.ModelCuboidInitBeforeReturnCallback;
 import net.enchantoutline.mixin_accessors.*;
-import net.enchantoutline.mixin_accessors.sodium.ModelCuboidAccessor;
 import net.enchantoutline.model.HijackedModel;
 import net.enchantoutline.shader.Shaders;
 import net.enchantoutline.util.CustomRenderLayers;
@@ -106,13 +103,13 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 							int[] tint = {config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override))};
 
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tint, thickenedQuads, Shaders.COLOR_CUTOUT_LAYER, ItemRenderState.Glint.NONE);
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tintLayers, thickenedQuads, Shaders.ZFIX_CUTOUT_LAYER, ItemRenderState.Glint.NONE);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tint, thickenedQuads, Shaders.COLOR_CUTOUT_LAYER, ItemRenderState.Glint.NONE);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, Shaders.ZFIX_CUTOUT_LAYER, ItemRenderState.Glint.NONE);
 
 						}
 						else{
 							//render glint (by having Z write and Z test, but no color write after rendering the item, in other words write to the depth buffer)
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tintLayers, thickenedQuads, Shaders.GLINT_CUTOUT_LAYER, glintType);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, Shaders.GLINT_CUTOUT_LAYER, glintType);
 						}
 					}
 				}

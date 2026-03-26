@@ -104,8 +104,8 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							RenderLayer colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, specMap -> Shaders.createColorRenderLayerNoCull(specMap, false), specMap -> Shaders.createColorRenderLayerCull(specMap, false), Shaders.COLOR_CUTOUT_LAYER, false);
 							RenderLayer zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, false);
 
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tint, thickenedQuads, colorLayer, ItemRenderState.Glint.NONE);
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tintLayers, thickenedQuads, zFixLayer, ItemRenderState.Glint.NONE);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tint, thickenedQuads, colorLayer, ItemRenderState.Glint.NONE);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, zFixLayer, ItemRenderState.Glint.NONE);
 
 						}
 						else{
@@ -113,7 +113,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 							RenderLayer glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, outlineColors, tintLayers, thickenedQuads, glintLayer, glintType);
+							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, glintLayer, glintType);
 						}
 					}
 				}

@@ -2,10 +2,9 @@ package net.enchantoutline.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.logging.LogUtils;
 import net.enchantoutline.EnchantmentGlintOutline;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -76,11 +75,11 @@ public class EnchantmentOutlineConfig {
 
     public void setBaseSolidOutlineColorAsInt(int color)
     {
-        color = ColorHelper.withAlpha(255, color);
+        color = ARGB.color(255, color);
         int[] newOutlineColor = new int[3];
-        newOutlineColor[0] = ColorHelper.getRed(color);
-        newOutlineColor[1] = ColorHelper.getGreen(color);
-        newOutlineColor[2] = ColorHelper.getBlue(color);
+        newOutlineColor[0] = ARGB.red(color);
+        newOutlineColor[1] = ARGB.green(color);
+        newOutlineColor[2] = ARGB.blue(color);
         render_solid_outline_color_rgb = newOutlineColor;
     }
 
@@ -89,7 +88,7 @@ public class EnchantmentOutlineConfig {
         if(outlineColorInt.length < 3){
             return -1;
         }
-        return ColorHelper.withAlpha(255,ColorHelper.getArgb((outlineColorInt[0]), (outlineColorInt[1]), (outlineColorInt[2])));
+        return ARGB.color(255,ARGB.color((outlineColorInt[0]), (outlineColorInt[1]), (outlineColorInt[2])));
     }
 
     public void setRenderArmor(boolean renderArmor){

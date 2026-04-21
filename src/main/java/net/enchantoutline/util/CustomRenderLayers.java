@@ -1,12 +1,11 @@
 package net.enchantoutline.util;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.util.HashMap;
 import java.util.Map;
 public class CustomRenderLayers {
-    private final Map<String, RenderLayer> customRenderLayers = new HashMap<>();
+    private final Map<String, RenderType> customRenderLayers = new HashMap<>();
     private int dirty = 0;
 
     public int getDirty()
@@ -19,9 +18,9 @@ public class CustomRenderLayers {
         this.dirty = dirty;
     }
 
-    public RenderLayer addCustomRenderLayer(String identifier, RenderLayer layer)
+    public RenderType addCustomRenderLayer(String identifier, RenderType layer)
     {
-        RenderLayer output = customRenderLayers.put(identifier, layer);
+        RenderType output = customRenderLayers.put(identifier, layer);
         if(output == null)
         {
             setDirty(getDirty()+1);
@@ -29,17 +28,17 @@ public class CustomRenderLayers {
         return output;
     }
 
-    public RenderLayer getCustomRenderLayer(String identifier)
+    public RenderType getCustomRenderLayer(String identifier)
     {
         return customRenderLayers.get(identifier);
     }
 
-    public boolean containsRenderLayer(RenderLayer layer)
+    public boolean containsRenderLayer(RenderType layer)
     {
         return customRenderLayers.containsValue(layer);
     }
 
-    public Iterable<RenderLayer> renderLayers()
+    public Iterable<RenderType> renderLayers()
     {
         return customRenderLayers.values();
     }

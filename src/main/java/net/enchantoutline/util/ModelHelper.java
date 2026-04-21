@@ -1,14 +1,14 @@
 package net.enchantoutline.util;
 
 import net.enchantoutline.mixin_accessors.ModelPartAccessor;
-import net.enchantoutline.mixin_accessors.ModelPart_CuboidAccessor;
+import net.enchantoutline.mixin_accessors.ModelPart_CubeAccessor;
 import net.enchantoutline.model.HijackedModel;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelTransform;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -17,8 +17,8 @@ import java.util.function.Function;
 public class ModelHelper {
     public static final ThreadLocal<Boolean> FLIP_CUBOIDS = ThreadLocal.withInitial(() -> false);
 
-    public static HijackedModel getThickenedModel(Model original, Function<Identifier, RenderLayer> layerFactory, float scale){
-        ModelPart root = original.getRootPart();
+    public static HijackedModel getThickenedModel(Model original, Function<Identifier, RenderType> layerFactory, float scale){
+        ModelPart root = original.root();
         ModelPart thickenedRoot = thickenedModelPart(root, scale);
 
         return new HijackedModel(thickenedRoot, layerFactory);
@@ -33,11 +33,11 @@ public class ModelHelper {
     private static ModelPart thickenedModelPartInternal(ModelPart original, float scale){
 
         ModelPartAccessor modelPartAccessor = (ModelPartAccessor)(Object)original;
-        List<ModelPart.Cuboid> cuboids = modelPartAccessor.enchantOutline$getCuboids();
+        List<ModelPart.Cube> cuboids = modelPartAccessor.enchantOutline$getCuboids();
 
-        List<ModelPart.Cuboid> thickCuboids = new ArrayList<>();
+        List<ModelPart.Cube> thickCuboids = new ArrayList<>();
         for(var cuboid: cuboids){
-            ModelPart_CuboidAccessor accessor = ((ModelPart_CuboidAccessor)cuboid);
+            ModelPart_CubeAccessor accessor = ((ModelPart_CubeAccessor)cuboid);
             for(Direction dir : accessor.enchantOutline$getDirections()){
                 thickCuboids.addAll(thickenCuboidFace(cuboid, dir, scale/*, stack*/));
             }
@@ -51,8 +51,8 @@ public class ModelHelper {
 
         ModelPart undoTransformModelPart = new ModelPart(thickCuboids, Map.of());
         //undoTransformModelPart.setOrigin(posOffset.x(),posOffset.y(),posOffset.z());
-        ModelTransform transform = new ModelTransform(original.originX, original.originY, original.originZ, original.pitch, original.yaw, original.roll, original.xScale, original.yScale, original.zScale);
-        undoTransformModelPart.setTransform(transform);
+        PartPose transform = new PartPose(original.x, original.y, original.z, original.xRot, original.yRot, original.zRot, original.xScale, original.yScale, original.zScale);
+        undoTransformModelPart.loadPose(transform);
         newChildren.put("EnchantOutline", undoTransformModelPart);
 
         for(var set :oldChildren.entrySet()){
@@ -60,20 +60,20 @@ public class ModelHelper {
         }
 
         ModelPart thickModelPart = new ModelPart(List.of(), newChildren);
-        thickModelPart.setDefaultTransform(original.getDefaultTransform());
-        ModelTransform trans = thickModelPart.getTransform();
-        thickModelPart.setTransform(trans);
+        thickModelPart.setInitialPose(original.getInitialPose());
+        PartPose trans = thickModelPart.storePose();
+        thickModelPart.loadPose(trans);
 
         return thickModelPart;
     }
 
-    private static List<ModelPart.Cuboid> thickenCuboidFace(ModelPart.Cuboid original, Direction dir, float scale/*, MatrixStack stack*/){
-        List<ModelPart.Cuboid> thickenedCuboids = new ArrayList<>(4);
+    private static List<ModelPart.Cube> thickenCuboidFace(ModelPart.Cube original, Direction dir, float scale/*, PoseStack stack*/){
+        List<ModelPart.Cube> thickenedCuboids = new ArrayList<>(4);
 
-        Vector3f normal = new Vector3f(dir.getUnitVector());
+        Vector3f normal = new Vector3f(dir.step());
         normal.mul(scale);
 
-        ModelPart_CuboidAccessor accessor = ((ModelPart_CuboidAccessor)original);
+        ModelPart_CubeAccessor accessor = ((ModelPart_CubeAccessor)original);
 
         Vector3f[] verts;
 
@@ -147,7 +147,7 @@ public class ModelHelper {
                 Vector3f movedPos = VertexHelper.growVert(startPos, cardDir, normal);
                 //movedPos.sub(startPos).mul(1/((extraX + sizeX)/sizeX), 1/((extraY + sizeY)/sizeY), 1/((extraZ + sizeZ)/sizeZ)).add(startPos);
                 ModelHelper.FLIP_CUBOIDS.set(true);
-                thickenedCuboids.add(new ModelPart.Cuboid(u, v, movedPos.x(), movedPos.y(), movedPos.z(), sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, accessor.enchantOutline$getTextureWidth(), accessor.enchantOutline$getTextureHeight(), Set.of(dir)));
+                thickenedCuboids.add(new ModelPart.Cube(u, v, movedPos.x(), movedPos.y(), movedPos.z(), sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, accessor.enchantOutline$getTextureWidth(), accessor.enchantOutline$getTextureHeight(), Set.of(dir)));
                 ModelHelper.FLIP_CUBOIDS.set(false);
             }
         }

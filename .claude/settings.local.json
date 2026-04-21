@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:fabricmc.net)",
+      "WebFetch(domain:meta.fabricmc.net)",
+      "Bash(curl -s 'https://meta.fabricmc.net/v2/versions/yarn/26.1.1')",
+      "Bash(curl -s 'https://meta.fabricmc.net/v2/versions/yarn')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); v=[e for e in d if e.get\\('gameVersion',''\\).startswith\\('26.'\\)]; print\\('\\\\n'.join\\(f\\\\\"{e['version']} \\(stable={e.get\\('stable'\\)}, build={e.get\\('build'\\)}\\)\\\\\" for e in v[:20]\\)\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); v=[e for e in d if '26.' in e.get\\('gameVersion',''\\)]; print\\(len\\(v\\)\\); print\\('\\\\n'.join\\(f\\\\\"{e['version']} gv={e.get\\('gameVersion'\\)} stable={e.get\\('stable'\\)}\\\\\" for e in v[:30]\\)\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\); print\\(json.dumps\\(d[:3], indent=2\\)\\)\")",
+      "Bash(curl -s 'https://meta.fabricmc.net/v2/versions/game')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('total:', len\\(d\\)\\); print\\('first 5:'\\); [print\\(f\\\\\"  {e['version']} stable={e['stable']}\\\\\"\\) for e in d[:5]]; print\\('any 26.x:', [e['version'] for e in d if e['version'].startswith\\('26'\\)]\\)\")",
+      "Bash(curl -s 'https://meta.fabricmc.net/v2/versions/loader')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('total:', len\\(d\\)\\); print\\('first 10:'\\); [print\\(f\\\\\"  {e['version']} stable={e['stable']}\\\\\"\\) for e in d[:10]]\")",
+      "Bash(curl -s -H 'Cache-Control: no-cache' 'https://meta.fabricmc.net/v2/versions/yarn')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); by_ver={}; [by_ver.setdefault\\(e['gameVersion'],[]\\).append\\(e['version']\\) for e in d]; recent=sorted\\(by_ver.keys\\(\\), reverse=True\\)[:15]; [print\\(f\\\\\"{v}: {by_ver[v][0]}\\\\\"\\) for v in recent]\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); vers=set\\(e['gameVersion'] for e in d\\); print\\('Any 26.x in yarn:', [v for v in vers if v.startswith\\('26'\\)]\\); print\\('Any 1.21.11+:', [v for v in vers if v.startswith\\('1.21.1'\\) or v.startswith\\('1.22'\\)]\\)\")",
+      "Bash(curl -s 'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml')",
+      "Bash(curl -s 'https://maven.fabricmc.net/net/fabricmc/yarn/maven-metadata.xml')",
+      "Bash(curl -s 'https://raw.githubusercontent.com/FabricMC/fabric-example-mod/1.21/gradle.properties')",
+      "Bash(curl -s 'https://api.github.com/repos/FabricMC/fabric-example-mod/branches')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(b['name']\\) for b in d]\")",
+      "Bash(curl -s 'https://api.github.com/repos/FabricMC/fabric-example-mod/branches?per_page=100')",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(b['name']\\) for b in d if '26' in b['name'] or '1.21' in b['name'] or b['name']=='master']\")",
+      "Bash(curl *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\); [print\\(f\\\\\"{v['version_number']} -> game_versions={v['game_versions']}\\\\\"\\) for v in d[:5]]\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\); [print\\(f\\\\\"{v['version_number']} -> gv={v['game_versions']} status={v['version_type']}\\\\\"\\) for v in d[:5]]\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\); [print\\(f\\\\\"{v['version_number']} id={v['id']} -> gv={v['game_versions']}\\\\\"\\) for v in d[:5]]\")",
+      "Bash(./gradlew build *)"
+    ]
+  }
+}

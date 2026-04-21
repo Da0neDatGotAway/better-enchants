@@ -1,7 +1,5 @@
 package net.enchantoutline.config;
 
-import net.minecraft.util.math.ColorHelper;
-
 public class ItemOverride {
     public boolean render = true;
     public boolean override_outline_size = false;

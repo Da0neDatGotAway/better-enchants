@@ -14,19 +14,20 @@ import net.enchantoutline.util.QuadHelper;
 import net.enchantoutline.util.RenderLayerHelper;
 import net.fabricmc.api.ModInitializer;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.TexturedRenderLayers;
-import net.minecraft.client.render.entity.TridentEntityRenderer;
-import net.minecraft.client.render.item.ItemRenderState;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.util.BufferAllocator;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.entity.ThrownTridentRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 	private static EnchantmentOutlineConfig config;
 
 	//I don't want to go out using a ThreadLocal like this but since we call to an interface class as a middleman I have no way to transfer the data all the way through
-	public static final ThreadLocal<ItemRenderState.LayerRenderState> LAYER_RENDER_STATE_RENDER_MODEL_STORAGE = new ThreadLocal<>();
+	public static final ThreadLocal<ItemStackRenderState.LayerRenderState> LAYER_RENDER_STATE_RENDER_MODEL_STORAGE = new ThreadLocal<>();
 
 	public static EnchantmentOutlineConfig getConfig()
 	{
@@ -66,16 +67,16 @@ public class EnchantmentGlintOutline implements ModInitializer {
 		return 9124657;
 	}
 
-	private static RenderLayer getTargetEnchantGlintLayer(){
-		return RenderLayers.armorEntityGlint();
+	private static RenderType getTargetEnchantGlintLayer(){
+		return RenderTypes.armorEntityGlint();
 	}
 
-	private static RenderLayer getTargetEnchantColorLayer(){
-		return TexturedRenderLayers.getEntitySolid();
+	private static RenderType getTargetEnchantColorLayer(){
+		return RenderTypes.entitySolid(Sheets.SHIELD_SHEET);
 	}
 
-	private static RenderLayer getTargetEnchantZFixLayer(){
-		return RenderLayers.waterMask();
+	private static RenderType getTargetEnchantZFixLayer(){
+		return RenderTypes.waterMask();
 	}
 
     @Override
@@ -91,7 +92,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 		//called before non-special item is rendered.
 		RenderQuads.Normal.Callback.EVENT.register((receiver, orderedRenderCommandQueue, matrixStack, itemDisplayContext, light, overlay, outlineColors, tintLayers, quads, renderLayer, glintType) -> {
 			if(config.isEnabled()){
-				if (glintType != ItemRenderState.Glint.NONE) {
+				if (glintType != ItemStackRenderState.FoilType.NONE) {
 					@Nullable ItemOverride override = getOverrideFromLayerRenderState(config::getItemOverride, receiver);
 					if(override == null || override.shouldRender()){
 						float scale = config.getScaleFactorFromOutlineSize(config.getOutlineSizeOverrideOrDefault(override, false));
@@ -101,31 +102,58 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 							int[] tint = {config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override))};
 
-							RenderLayer colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, specMap -> Shaders.createColorRenderLayerNoCull(specMap, false), specMap -> Shaders.createColorRenderLayerCull(specMap, false), Shaders.COLOR_CUTOUT_LAYER, false);
-							RenderLayer zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, false);
+							RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, specMap -> Shaders.createColorRenderLayerNoCull(specMap, false), specMap -> Shaders.createColorRenderLayerCull(specMap, false), Shaders.COLOR_CUTOUT_LAYER, false);
+							RenderType zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, false);
 
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tint, thickenedQuads, colorLayer, ItemRenderState.Glint.NONE);
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, zFixLayer, ItemRenderState.Glint.NONE);
+							final int colorTint = tint[0];
+							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, colorLayer, (pose, vc) -> {
+								QuadInstance qi = new QuadInstance();
+								for (int v = 0; v < 4; v++) {
+									qi.setColor(v, colorTint);
+									qi.setLightCoords(v, Integer.MAX_VALUE);
+								}
+								qi.setOverlayCoords(0);
+								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+							});
+							final int zFixTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
+							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, zFixLayer, (pose, vc) -> {
+								QuadInstance qi = new QuadInstance();
+								for (int v = 0; v < 4; v++) {
+									qi.setColor(v, zFixTint);
+									qi.setLightCoords(v, Integer.MAX_VALUE);
+								}
+								qi.setOverlayCoords(0);
+								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+							});
 
 						}
 						else{
 							//render glint (by having Z write and Z test, but no color write after rendering the item, in other words write to the depth buffer)
 
-							RenderLayer glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
+							RenderType glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
-							orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, glintLayer, glintType);
+							final int glintTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
+							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, glintLayer, (pose, vc) -> {
+								QuadInstance qi = new QuadInstance();
+								for (int v = 0; v < 4; v++) {
+									qi.setColor(v, glintTint);
+									qi.setLightCoords(v, Integer.MAX_VALUE);
+								}
+								qi.setOverlayCoords(0);
+								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+							});
 						}
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
 		//the other half of render solid for special items. They should either both use the renderCommandQueue or both avoid it though, this mix is not making me happy.
 		RenderQuads.Model.ModelPart.EVENT.register((receiver, part, matrices, renderLayer, light, overlay, sprite, sheeted, hasGlint, tintedColor, crumblingOverlay, i) -> {
 			if(config.isEnabled()){
 				if(hasGlint){
-					ItemRenderState.LayerRenderState storedLayerRenderState = LAYER_RENDER_STATE_RENDER_MODEL_STORAGE.get();
+					ItemStackRenderState.LayerRenderState storedLayerRenderState = LAYER_RENDER_STATE_RENDER_MODEL_STORAGE.get();
 					@Nullable ItemOverride override = null;
 					if(storedLayerRenderState != null){
 						override = getOverrideFromLayerRenderState(config::getItemOverride, storedLayerRenderState);
@@ -141,31 +169,31 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							int tint = config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override));
 
 							//get render layer
-							RenderLayer colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, isDoubleSided);
-							RenderLayer zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, isDoubleSided);
+							RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, isDoubleSided);
+							RenderType zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, isDoubleSided);
 
 							//render call
 							OrderedRenderCommandQueueImplAccessor commandQueueAccessor = (OrderedRenderCommandQueueImplAccessor) receiver;
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(true);
-							receiver.getBatchingQueue(getColorBatchingQueue()).submitModelPart(thickModelPart, matrices, colorLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
-							receiver.getBatchingQueue(getZFixBatchingQueue()).submitModelPart(thickModelPart, matrices, zFixLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
+							receiver.submitModelPart(thickModelPart, matrices, colorLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
+							receiver.submitModelPart(thickModelPart, matrices, zFixLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(false);
 						} else {
 							//instead of using render double-sided for this section it would probably be better to have a creation method for double sided layers. This would be a good improvement
 
 							//get render layer
-							RenderLayer glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
+							RenderType glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
 
 							//render call
 							OrderedRenderCommandQueueImplAccessor commandQueueAccessor = (OrderedRenderCommandQueueImplAccessor) receiver;
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(true);
-							receiver.getBatchingQueue(getZFixBatchingQueue()).submitModelPart(thickModelPart, matrices, glintLayer, Integer.MAX_VALUE, 0, sprite, sheeted, true, tintedColor, crumblingOverlay, i);
+							receiver.submitModelPart(thickModelPart, matrices, glintLayer, Integer.MAX_VALUE, 0, sprite, sheeted, true, tintedColor, crumblingOverlay, i);
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(false);
 						}
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
 		EquipmentRendererQueueEnchantedCallback.EVENT.register((( queueHolder, renderedStack, queue, texture, model, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand) -> {
@@ -176,119 +204,119 @@ public class EnchantmentGlintOutline implements ModInitializer {
 					override = getOverrideFromNullableItem(config::getArmorOverride, renderedStack.getItem());
 				}
 				if(override == null && config.shouldRenderArmor() || override != null && override.shouldRender()){
-					model.setAngles(s);
+					model.setupAnim(s);
 
 					float scale = config.getScaleFactorFromOutlineSize(config.getOutlineSizeOverrideOrDefault(override, true));
 					//should create it straight from the identifier but it's just not working, this does. hence the garbage
-					RenderLayer garbageHackPatchLayer = RenderLayers.armorCutoutNoCull(texture);
+					RenderType garbageHackPatchLayer = RenderTypes.armorCutoutNoCull(texture);
 					if(config.getRenderSolidOverrideOrDefault(override, true)){
 						int tint = config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override));
 
 						//armor is literally always double-sided, the equipment renderer forces it to use double-sided.
-						RenderLayer colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true); //RenderLayerHelper.renderLayerFromIdentifierDoubleSided(texture, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true);
+						RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true); //RenderLayerHelper.renderLayerFromIdentifierDoubleSided(texture, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true);
 
 						HijackedModel thickColorModel = ModelHelper.getThickenedModel(model, layer -> Shaders.COLOR_CUTOUT_LAYER, scale);
 
-						queueHolder.getBatchingQueue(getColorBatchingQueue()).submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
+						queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 					}
 					else{
-						RenderLayer glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, true);
+						RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, true);
 
 						HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
-						queueHolder.getBatchingQueue(getZFixBatchingQueue()).submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
-						queueHolder.getBatchingQueue(getZFixBatchingQueue()+1).submitModel(thickGlintZModel, s, matrixStack, Shaders.ARMOR_ENTITY_GLINT_FIX, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+						queueHolder.submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+						queueHolder.submitModel(thickGlintZModel, s, matrixStack, Shaders.ARMOR_ENTITY_GLINT_FIX, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 
 		TridentEntityRendererQueueEnchantedCallback.EVENT.register(((queueHolder, queue, model, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand) -> {
 			if(config.isEnabled()){
-				if(renderLayer.equals(RenderLayers.entityGlint())){
+				if(renderLayer.equals(RenderTypes.entityGlint())){
 					@Nullable ItemOverride override = getOverrideFromNullableItem(config::getItemOverride, Items.TRIDENT);
 					if(override == null || override.shouldRender()){
 						float scale = config.getScaleFactorFromOutlineSize(config.getOutlineSizeOverrideOrDefault(override, true));
-						RenderLayer garbageHackPatchLayer = model.getLayer(TridentEntityRenderer.TEXTURE);
+						RenderType garbageHackPatchLayer = model.renderType(ThrownTridentRenderer.TRIDENT_LOCATION);
 						if(config.getRenderSolidOverrideOrDefault(override, false)){
 							int tint = config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override));
 
-							RenderLayer colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, false);
+							RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, false);
 
 							HijackedModel thickColorModel = ModelHelper.getThickenedModel(model, layer -> Shaders.COLOR_CUTOUT_LAYER, scale);
 
-							queueHolder.getBatchingQueue(getColorBatchingQueue()).submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 						}
 						else{
-							RenderLayer glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
+							RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
-							queueHolder.getBatchingQueue(getZFixBatchingQueue()).submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
-							queueHolder.getBatchingQueue(getZFixBatchingQueue()+1).submitModel(thickGlintZModel, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.submitModel(thickGlintZModel, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
 						}
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 
 		//---------- End Render Calls ----------
 
 		//---------- Render Layer Order ----------
 
-		//solid ordering in WorldRenderer
-		WorldRenderer.RenderLayer.Callback.EVENT.register((receiver, renderLayer) -> {
+		//solid ordering in LevelRenderer
+		ImmediateRenderCurrentLayer.Before.EVENT.register((receiver, renderLayer) -> {
 
 			if(renderLayer.equals(getTargetEnchantColorLayer())){
 				for(var customLayer : COLOR_LAYERS.renderLayers())
 				{
 					if(((RenderLayerAccessor)customLayer).enchantOutline$shouldUseLayerBuffer()) {
-						receiver.draw(customLayer);
+						receiver.endBatch(customLayer);
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
 		//glint ordering in world renderer
-		WorldRenderer.RenderLayer.Callback.EVENT.register((receiver, renderLayer) -> {
+		ImmediateRenderCurrentLayer.Before.EVENT.register((receiver, renderLayer) -> {
 
 			if(renderLayer.equals(getTargetEnchantGlintLayer())){
 				for(var customLayer : GLINT_LAYERS.renderLayers())
 				{
 					if(((RenderLayerAccessor)customLayer).enchantOutline$shouldUseLayerBuffer()) {
-						receiver.draw(customLayer);
+						receiver.endBatch(customLayer);
 					}
 				}
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
 		ImmediateRenderCurrentLayer.Before.EVENT.register((receiver, layer) -> {
-			for (RenderLayer renderLayer : ((VertexConsumerProvider_ImmediateAccessor)receiver).enchantOutline$getLayerBuffers().keySet()) {
+			for (RenderType renderLayer : ((MultiBufferSource_BufferSourceAccessor)receiver).enchantOutline$getLayerBuffers().keySet()) {
 				if(((RenderLayerAccessor)renderLayer).enchantOutline$shouldDrawBeforeCustom()){
-					receiver.draw(renderLayer);
+					receiver.endBatch(renderLayer);
 				}
 			}
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
 		ImmediateRenderCurrentLayer.After.EVENT.register((receiver, layer) -> {
-			for (RenderLayer renderLayer : ((VertexConsumerProvider_ImmediateAccessor)receiver).enchantOutline$getLayerBuffers().keySet()) {
+			for (RenderType renderLayer : ((MultiBufferSource_BufferSourceAccessor)receiver).enchantOutline$getLayerBuffers().keySet()) {
 				if(((RenderLayerAccessor)renderLayer).enchantOutline$shouldDrawAfterCustom()){
-					receiver.draw(renderLayer);
+					receiver.endBatch(renderLayer);
 				}
 			}
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 
-		//VertexConsumerProvider contains a setDirty method used to track if we need to update it's return value or not.
+		//MultiBufferSource contains a setDirty method used to track if we need to update it's return value or not.
 		BufferBuilderModifyReturnValue.EVENT.register((original) -> {
-			VertexConsumerProvider_ImmediateAccessor accessor = (VertexConsumerProvider_ImmediateAccessor)original;
+			MultiBufferSource_BufferSourceAccessor accessor = (MultiBufferSource_BufferSourceAccessor)original;
 
 			var enchantGlintLayer = getTargetEnchantGlintLayer();
 			var enchantColorLayer = getTargetEnchantColorLayer();
@@ -300,14 +328,14 @@ public class EnchantmentGlintOutline implements ModInitializer {
 				accessor.enchantOutline$setDirty(COLOR_LAYERS, COLOR_LAYERS.getDirty());
 				accessor.enchantOutline$setDirty(ZFIX_LAYERS, ZFIX_LAYERS.getDirty());
 
-				SequencedMap<RenderLayer, BufferAllocator> clonedBuffer = new Object2ObjectLinkedOpenHashMap<>(buffers);
+				SequencedMap<RenderType, ByteBufferBuilder> clonedBuffer = new Object2ObjectLinkedOpenHashMap<>(buffers);
 				buffers.clear();
 				for(var set : clonedBuffer.entrySet()) {
 					if(!GLINT_LAYERS.containsRenderLayer(set.getKey()) && !COLOR_LAYERS.containsRenderLayer(set.getKey()) && !ZFIX_LAYERS.containsRenderLayer(set.getKey())) {
 						if(set.getKey() == enchantColorLayer) {
-							for(RenderLayer layer : COLOR_LAYERS.renderLayers()) {
+							for(RenderType layer : COLOR_LAYERS.renderLayers()) {
 								if(((RenderLayerAccessor)layer).enchantOutline$shouldUseLayerBuffer()){
-									buffers.put(layer, new BufferAllocator(layer.getExpectedBufferSize()));
+									buffers.put(layer, new ByteBufferBuilder(layer.bufferSize()));
 								}
 							}
 						}
@@ -317,23 +345,23 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							enchantGlintLayer = Shaders.ARMOR_ENTITY_GLINT_FIX;
 						}
 						if(set.getKey() == enchantGlintLayer) {
-							for(RenderLayer layer : GLINT_LAYERS.renderLayers())
+							for(RenderType layer : GLINT_LAYERS.renderLayers())
 							{
 								if(((RenderLayerAccessor)layer).enchantOutline$shouldUseLayerBuffer()) {
-									buffers.put(layer, new BufferAllocator(layer.getExpectedBufferSize()));
+									buffers.put(layer, new ByteBufferBuilder(layer.bufferSize()));
 								}
 							}
 						}
 						if(set.getKey() == getTargetEnchantGlintLayer()){
-							buffers.put(Shaders.ARMOR_ENTITY_GLINT_FIX, new BufferAllocator(Shaders.ARMOR_ENTITY_GLINT_FIX.getExpectedBufferSize()));
+							buffers.put(Shaders.ARMOR_ENTITY_GLINT_FIX, new ByteBufferBuilder(Shaders.ARMOR_ENTITY_GLINT_FIX.bufferSize()));
 						}
 						//end dumb block
 
 						if(set.getKey() == enchantZFixLayer){
-							for(RenderLayer layer : ZFIX_LAYERS.renderLayers())
+							for(RenderType layer : ZFIX_LAYERS.renderLayers())
 							{
 								if(((RenderLayerAccessor)layer).enchantOutline$shouldUseLayerBuffer()) {
-									buffers.put(layer, new BufferAllocator(layer.getExpectedBufferSize()));
+									buffers.put(layer, new ByteBufferBuilder(layer.bufferSize()));
 								}
 							}
 						}
@@ -350,27 +378,27 @@ public class EnchantmentGlintOutline implements ModInitializer {
 		ItemModelManagerUpdateModelCallback.EVENT.register(((receiver, model, itemRenderState, itemStack, itemModelManager, itemDisplayContext, clientWorld, heldItemContext, seed) -> {
 			((ItemRenderStateAccessor)itemRenderState).enchantOutline$setItemRendered(itemStack.getItem());
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 
 		ItemRenderStateRenderLayerCallback.EVENT.register(((receiver, layerRenderState, matrices, orderedRenderCommandQueue, light, overlay, i) -> {
 			((ItemRenderState_LayerRenderStateAccessor)layerRenderState).enchantOutline$setOwningItemRenderState(receiver);
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 
 		//set the item right before we lose the type
-		LayerRenderStateRenderSpecial.Callback.EVENT.register(((receiver, specialModelRenderer, o, itemDisplayContext, matrixStack, orderedRenderCommandQueue, light, overlay, glint, i) -> {
+		LayerRenderStateRenderSpecial.Callback.EVENT.register(((receiver, specialModelRenderer, o, matrixStack, orderedRenderCommandQueue, light, overlay, glint, i) -> {
 			LAYER_RENDER_STATE_RENDER_MODEL_STORAGE.set(receiver);
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 
 		//clear the item right after calling
-		LayerRenderStateRenderSpecial.Post.EVENT.register(((receiver, specialModelRenderer, o, itemDisplayContext, matrixStack, orderedRenderCommandQueue, light, overlay, glint, i) -> {
+		LayerRenderStateRenderSpecial.Post.EVENT.register(((receiver, specialModelRenderer, o, matrixStack, orderedRenderCommandQueue, light, overlay, glint, i) -> {
 			LAYER_RENDER_STATE_RENDER_MODEL_STORAGE.remove();
 
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		}));
 		//---------- End Item Type Storage ----------
 
@@ -380,13 +408,13 @@ public class EnchantmentGlintOutline implements ModInitializer {
 	}
 
 	private static void initLayers(){
-		GLINT_LAYERS.addCustomRenderLayer(Identifier.of(MOD_ID,"cutoutlayer").toString(), Shaders.GLINT_CUTOUT_LAYER);
-		COLOR_LAYERS.addCustomRenderLayer(Identifier.of(MOD_ID,"cutoutlayer").toString(), Shaders.COLOR_CUTOUT_LAYER);
-		ZFIX_LAYERS.addCustomRenderLayer(Identifier.of(MOD_ID, "cutoutlayer").toString(), Shaders.ZFIX_CUTOUT_LAYER);
+		GLINT_LAYERS.addCustomRenderLayer(Identifier.fromNamespaceAndPath(MOD_ID,"cutoutlayer").toString(), Shaders.GLINT_CUTOUT_LAYER);
+		COLOR_LAYERS.addCustomRenderLayer(Identifier.fromNamespaceAndPath(MOD_ID,"cutoutlayer").toString(), Shaders.COLOR_CUTOUT_LAYER);
+		ZFIX_LAYERS.addCustomRenderLayer(Identifier.fromNamespaceAndPath(MOD_ID, "cutoutlayer").toString(), Shaders.ZFIX_CUTOUT_LAYER);
 	}
 
-	@Nullable ItemOverride getOverrideFromLayerRenderState(Function<String, @Nullable ItemOverride> overrideGetter, ItemRenderState.LayerRenderState layerRenderState){
-		@Nullable ItemRenderState owningState = ((ItemRenderState_LayerRenderStateAccessor)layerRenderState).enchantOutline$getOwningRenderState();
+	@Nullable ItemOverride getOverrideFromLayerRenderState(Function<String, @Nullable ItemOverride> overrideGetter, ItemStackRenderState.LayerRenderState layerRenderState){
+		@Nullable ItemStackRenderState owningState = ((ItemRenderState_LayerRenderStateAccessor)layerRenderState).enchantOutline$getOwningRenderState();
 		if(owningState != null){
 			@Nullable Item renderedItem = ((ItemRenderStateAccessor)owningState).enchantOutline$getItemRendered();
 			return getOverrideFromNullableItem(overrideGetter, renderedItem);
@@ -396,7 +424,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 	@Nullable ItemOverride getOverrideFromNullableItem(Function<String, @Nullable ItemOverride> overrideGetter, @Nullable Item renderedItem){
 		if(renderedItem != null){
-			Identifier itemId = Registries.ITEM.getId(renderedItem);
+			Identifier itemId = BuiltInRegistries.ITEM.getKey(renderedItem);
 			if(itemId != null){
 				return overrideGetter.apply(itemId.toString());
 			}

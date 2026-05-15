@@ -1,5 +1,7 @@
 package net.enchantoutline.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.enchantoutline.events.ImmediateRenderCurrentLayer;
 import net.enchantoutline.mixin_accessors.MultiBufferSource_BufferSourceAccessor;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -12,8 +14,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,35 +26,16 @@ public class MultiBufferSource_BufferSourceMixin implements MultiBufferSource_Bu
     @Final
     protected SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
 
-    @Unique
-    private boolean enchantOutline$inEndBatchCallback = false;
+    //endLastBatch is the equivalent of DrawCurrentLayer
+    @WrapOperation(method = "endLastBatch", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch(Lnet/minecraft/client/renderer/rendertype/RenderType;)V"))
+    void enchantOutline$OnDrawCurrentLayer(MultiBufferSource.BufferSource instance, RenderType layer, Operation<Void> original){
 
-    @Inject(method = "endBatch(Lnet/minecraft/client/renderer/rendertype/RenderType;)V", at = @At("HEAD"), cancellable = true)
-    void enchantOutline$OnDrawCurrentLayerHead(RenderType layer, CallbackInfo ci){
-        // Guard against re-entrance: listeners may themselves call endBatch on other layers;
-        // firing the event again would recurse without terminating.
-        if (enchantOutline$inEndBatchCallback) return;
-        enchantOutline$inEndBatchCallback = true;
-        try {
-            MultiBufferSource.BufferSource self = (MultiBufferSource.BufferSource)(Object)this;
-            InteractionResult result = ImmediateRenderCurrentLayer.Before.EVENT.invoker().callback(self, layer);
-            if (result == InteractionResult.FAIL) {
-                ci.cancel();
-            }
-        } finally {
-            enchantOutline$inEndBatchCallback = false;
-        }
-    }
+        InteractionResult result = ImmediateRenderCurrentLayer.Before.EVENT.invoker().callback(instance, layer);
 
-    @Inject(method = "endBatch(Lnet/minecraft/client/renderer/rendertype/RenderType;)V", at = @At("RETURN"))
-    void enchantOutline$OnDrawCurrentLayerReturn(RenderType layer, CallbackInfo ci){
-        if (enchantOutline$inEndBatchCallback) return;
-        enchantOutline$inEndBatchCallback = true;
-        try {
-            MultiBufferSource.BufferSource self = (MultiBufferSource.BufferSource)(Object)this;
-            ImmediateRenderCurrentLayer.After.EVENT.invoker().post(self, layer);
-        } finally {
-            enchantOutline$inEndBatchCallback = false;
+        if(result != InteractionResult.FAIL){
+            original.call(instance, layer);
+
+            ImmediateRenderCurrentLayer.After.EVENT.invoker().post(instance, layer);
         }
     }
 

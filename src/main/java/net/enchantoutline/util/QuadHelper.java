@@ -1,5 +1,8 @@
 package net.enchantoutline.util;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Vec3i;
 import org.joml.Vector3f;
@@ -36,5 +39,16 @@ public class QuadHelper {
             }
         }
         return newQuads;
+    }
+
+
+    public static void renderCustomGeometryFromQuads(PoseStack.Pose pose, VertexConsumer vc, List<BakedQuad> quads, int colorTint){
+            QuadInstance qi = new QuadInstance();
+            for (int v = 0; v < 4; v++) {
+                qi.setColor(v, colorTint);
+                qi.setLightCoords(v, Integer.MAX_VALUE);
+            }
+            qi.setOverlayCoords(0);
+            for (BakedQuad q : quads) vc.putBakedQuad(pose, q, qi);
     }
 }

@@ -22,7 +22,6 @@ import net.minecraft.client.renderer.entity.ThrownTridentRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.QuadInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -102,45 +101,27 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 							int[] tint = {config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override))};
 
-							RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, COLOR_LAYERS, specMap -> Shaders.createColorRenderLayerNoCull(specMap, false), specMap -> Shaders.createColorRenderLayerCull(specMap, false), Shaders.COLOR_CUTOUT_LAYER, false);
-							RenderType zFixLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, false);
+							RenderType colorLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(quads.getFirst().materialInfo().sprite(), COLOR_LAYERS, specMap -> Shaders.createColorRenderLayerNoCull(specMap, false), specMap -> Shaders.createColorRenderLayerCull(specMap, false), Shaders.COLOR_CUTOUT_LAYER, false);
+							RenderType zFixLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(quads.getFirst().materialInfo().sprite(), ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, false);
 
 							final int colorTint = tint[0];
 							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, colorLayer, (pose, vc) -> {
-								QuadInstance qi = new QuadInstance();
-								for (int v = 0; v < 4; v++) {
-									qi.setColor(v, colorTint);
-									qi.setLightCoords(v, Integer.MAX_VALUE);
-								}
-								qi.setOverlayCoords(0);
-								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, colorTint);
 							});
 							final int zFixTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
 							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, zFixLayer, (pose, vc) -> {
-								QuadInstance qi = new QuadInstance();
-								for (int v = 0; v < 4; v++) {
-									qi.setColor(v, zFixTint);
-									qi.setLightCoords(v, Integer.MAX_VALUE);
-								}
-								qi.setOverlayCoords(0);
-								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, zFixTint);
 							});
 
 						}
 						else{
 							//render glint (by having Z write and Z test, but no color write after rendering the item, in other words write to the depth buffer)
 
-							RenderType glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
+							RenderType glintLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(quads.getFirst().materialInfo().sprite(), GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							final int glintTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
 							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, glintLayer, (pose, vc) -> {
-								QuadInstance qi = new QuadInstance();
-								for (int v = 0; v < 4; v++) {
-									qi.setColor(v, glintTint);
-									qi.setLightCoords(v, Integer.MAX_VALUE);
-								}
-								qi.setOverlayCoords(0);
-								for (BakedQuad q : thickenedQuads) vc.putBakedQuad(pose, q, qi);
+								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
 							});
 						}
 					}
@@ -182,7 +163,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							//instead of using render double-sided for this section it would probably be better to have a creation method for double sided layers. This would be a good improvement
 
 							//get render layer
-							RenderType glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
+							RenderType glintLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
 
 							//render call
 							OrderedRenderCommandQueueImplAccessor commandQueueAccessor = (OrderedRenderCommandQueueImplAccessor) receiver;
@@ -213,14 +194,14 @@ public class EnchantmentGlintOutline implements ModInitializer {
 						int tint = config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override));
 
 						//armor is literally always double-sided, the equipment renderer forces it to use double-sided.
-						RenderType colorLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true); //RenderLayerHelper.renderLayerFromIdentifierDoubleSided(texture, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true);
+						RenderType colorLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true); //RenderLayerHelper.renderLayerFromIdentifierDoubleSided(texture, COLOR_LAYERS, Shaders::createColorRenderLayerNoCull, Shaders::createColorRenderLayerCull, Shaders.COLOR_CUTOUT_LAYER, true);
 
 						HijackedModel thickColorModel = ModelHelper.getThickenedModel(model, layer -> Shaders.COLOR_CUTOUT_LAYER, scale);
 
 						queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 					}
 					else{
-						RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, true);
+						RenderType glintZLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, true);
 
 						HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
@@ -249,7 +230,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 						}
 						else{
-							RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
+							RenderType glintZLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
@@ -368,6 +349,12 @@ public class EnchantmentGlintOutline implements ModInitializer {
 						buffers.put(set.getKey(), set.getValue());
 					}
 				}
+				LOGGER.info("Rendering Order");
+				int i = 0;
+				for(var set : clonedBuffer.entrySet()){
+					LOGGER.info("Current({}): {}", i, set.getKey());
+					i++;
+				}
 			}
 
 			return null;
@@ -447,5 +434,13 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 		// Immediately save config to file to update any fields that may have changed.
 		config.saveAsync();
+	}
+
+	public static void Log1(){
+		EnchantmentGlintOutline.LOGGER.info("StartEndBatchRender");
+	}
+
+	public static void Log2(RenderType type){
+		EnchantmentGlintOutline.LOGGER.info("RenderingLayer: {}", type);
 	}
 }

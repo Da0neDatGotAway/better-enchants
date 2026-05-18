@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.TextureTransform;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 
@@ -85,7 +86,7 @@ public class Shaders {
             "enchout_glint_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", AtlasIds.ITEMS)
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
                     .affectsCrumbling()
                     .createRenderSetup()
     );
@@ -94,7 +95,7 @@ public class Shaders {
             "enchnout_color_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", AtlasIds.ITEMS)
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
                     .affectsCrumbling()
                     .createRenderSetup()
     );
@@ -103,7 +104,7 @@ public class Shaders {
             "enchout_zfix_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", AtlasIds.ITEMS)
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
                     .affectsCrumbling()
                     .createRenderSetup()
     );
@@ -118,41 +119,41 @@ public class Shaders {
                     .createRenderSetup()
     );
 
-    public static RenderType createGlintRenderLayerCull(Map<String, TextureSpec> specMap){
+    public static RenderType createGlintRenderLayerCull(Map<String, Identifier> specMap){
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                 .useLightmap()
                 .affectsCrumbling();
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue());
         }
         return RenderType.create("enchout_glint_model", builder.createRenderSetup());
     }
 
-    public static RenderType createGlintRenderLayerNoCull(Map<String, TextureSpec> specMap) {
+    public static RenderType createGlintRenderLayerNoCull(Map<String, Identifier> specMap) {
 
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL)
                 .useLightmap()
                 .affectsCrumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue());
         }
 
         return RenderType.create("enchout_glint_model", builder.createRenderSetup());
     }
 
-    public static RenderType createColorRenderLayerCull(Map<String, TextureSpec> specMap) {
+    public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap) {
         return createColorRenderLayerCull(specMap, true);
     }
 
     //no overlay, whatever that means
-    public static RenderType createColorRenderLayerCull(Map<String, TextureSpec> specMap, boolean before) {
+    public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap, boolean before) {
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
                 .useLightmap()
                 .affectsCrumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue());
         }
 
         RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
@@ -163,18 +164,18 @@ public class Shaders {
         return layer;
     }
 
-    public static RenderType createColorRenderLayerNoCull(Map<String, TextureSpec> specMap) {
+    public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap) {
         return createColorRenderLayerNoCull(specMap ,true);
     }
 
     //again no overlay
-    public static RenderType createColorRenderLayerNoCull(Map<String, TextureSpec> specMap, boolean before) {
+    public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap, boolean before) {
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_NOCULL)
                 .useLightmap()
                 .affectsCrumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue());
         }
 
         RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
@@ -185,26 +186,26 @@ public class Shaders {
         return layer;
     }
 
-    public static RenderType createZFixRenderLayerCull(Map<String, TextureSpec> specMap) {
+    public static RenderType createZFixRenderLayerCull(Map<String, Identifier> specMap) {//TextureSpec
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL);
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue()/*, entry.getValue().sampler()*/);
         }
 
         return RenderType.create("enchout_zfix_model", builder.createRenderSetup());
     }
 
-    public static RenderType createZFixRenderLayerNoCull(Map<String, TextureSpec> specMap) {
+    public static RenderType createZFixRenderLayerNoCull(Map<String, Identifier> specMap) {//TextureSpec
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL);
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
+            builder = builder.withTexture("Sampler0", entry.getValue()/*, entry.getValue().sampler()*/);
         }
 
         return RenderType.create("enchout_zfix_model", builder.createRenderSetup());
     }
 
-    public static record TextureSpec(Identifier location, Supplier<GpuSampler> sampler) {
-    }
+    /*public static record TextureSpec(Identifier location, Supplier<GpuSampler> sampler) {
+    }*/
 }

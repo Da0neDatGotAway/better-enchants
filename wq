@@ -1,0 +1,344 @@
+[33mcommit 41c1136c1f965a4cb67525b5a50a7887b2faeb07[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 23:27:56 2026 -0700
+
+    26.1 port finished. Added jank render pass skip. Worked fine on local.
+
+[33mcommit a3d646b6f68d538cc38e063ae9d402921016f5be[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 21:21:59 2026 -0700
+
+    cleaned up some stuff. glint render type still stops player rendering.
+
+[33mcommit 1ba5d2014a69e638659a5c7c85424561092b6349[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 21:04:49 2026 -0700
+
+    need cleanup. All features (somewhat) working. glint overriding player though
+
+[33mcommit 436f86006d492adc4b0da87726e12bbeecdfe97c[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 19:42:40 2026 -0700
+
+    added armor render solid. Still need to get non-solid
+
+[33mcommit a3e397a7f79ed23b4d8883b62d77c0a451a3e966[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 18:08:42 2026 -0700
+
+    got model parts render order working.
+
+[33mcommit 477a61ea2b73b0d4dff569cdabcb2ca5b902fb20[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon May 18 15:35:23 2026 -0700
+
+    patched a lot of stuff for renderSolid and in general. (GLINT EFFECT MAY BE LESS STABLE THAN PREVIOUS VERSIONS)
+
+[33mcommit 4d40e873bfd32d139e5317e3e3088b29be80035d[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri May 15 13:49:03 2026 -0700
+
+    started porting changes from #85 to update to 26.1
+
+[33mcommit ff394b721f7f1577bd8e95d7fc2c443cf5d0e29f[m
+Author: marques.scripps <s195139@uos.ac.uk>
+Date:   Tue Apr 21 20:31:43 2026 +0100
+
+    feat: Updated to minecraft 26.1 version, removed yarn mappings due to minecraft now supporting directly
+
+[33mcommit 89ab49a18754e88063a07558bee9ee8b0c852a2d[m[33m ([m[1;31morigin/1.21.11[m[33m)[m
+Merge: 847aa9e 9c02b28
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Mar 26 10:44:30 2026 -0700
+
+    Merge pull request
+    
+    Merge dev to master
+
+[33mcommit 9c02b28eb85b804b6cd9ddc5418542b257ee3800[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Mar 26 10:32:50 2026 -0700
+
+    patched the crash. This commit must be backported to 1.21.9
+
+[33mcommit 847aa9ebd5cec1919d03d27782adebdd90306653[m
+Merge: 1366b4d a3dec04
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 19 19:46:55 2025 -0800
+
+    Merge pull request #54 from Da0neDatGotAway/dev
+    
+    fixed a bug causing a crash on startup without iris, because of acces…
+
+[33mcommit a3dec044e2724623e8f5f370442720a8ea3d93aa[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 19 19:39:42 2025 -0800
+
+    fixed a bug causing a crash on startup without iris, because of access wideners
+
+[33mcommit 1366b4ddf2b46d078d9fc568044cd2c38a6401de[m
+Merge: cb140ad d6709e2
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 19 01:24:37 2025 -0800
+
+    Merge pull request #52 from Da0neDatGotAway/dev
+    
+    Update to 1.21.11 (ignore my jank)
+
+[33mcommit d6709e2ac31da373e123f0a83766202d2fb66611[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 19 01:22:21 2025 -0800
+
+    cleanup
+
+[33mcommit ff87eccc9b0027a784558377b5ea1a76559d5dd1[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 19 01:14:05 2025 -0800
+
+    full working (if not janky and going to bite me later) 1.21.11 port
+
+[33mcommit 3df0384799c4da4a676157e5f52226e5901adac9[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 18 20:40:11 2025 -0800
+
+    actually fixes most all the armor rendering issues
+
+[33mcommit efc6c507a03e55091591993286fc65e2acc48cfc[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 18 20:30:53 2025 -0800
+
+    this fixes it for some reason
+
+[33mcommit 9e73a09433c090332225f773c9201fb6bbfb434d[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 14 02:47:51 2025 -0800
+
+    started port to 1.21.11
+
+[33mcommit cb140adc44526be3f6646bff64a2de131af5ae25[m
+Merge: b4364fe 72273ee
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sat Dec 13 22:44:17 2025 -0800
+
+    Merge pull request #48 from Da0neDatGotAway/rewrite-cuboid-changes
+    
+    Rewrite cuboid changes
+
+[33mcommit 72273eed3ab8c5b0220cd073f8906cd1fb826196[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sat Dec 13 22:36:12 2025 -0800
+
+    litterally just a version change because apparently iris and immediatelyfast just work now
+
+[33mcommit ba405f6587193f7bcf885fc886081b6be4e6a7c1[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Tue Dec 9 21:28:23 2025 -0800
+
+    pre release build. Added translation keys and descriptions and sutch
+
+[33mcommit 82c9cd85b4bb4bf9a2efd4f17c1ca237b3eb0862[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 07:45:00 2025 -0800
+
+    WORKING WITH SODIUM OMG
+
+[33mcommit b4364feac8c13189aad8695cd840f54a054eaf4a[m
+Merge: b8f90e1 16eb9a5
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 07:26:05 2025 -0800
+
+    Merge pull request #45 from Da0neDatGotAway/rewrite-cuboid-changes
+    
+    Rewrite cuboid changes
+
+[33mcommit 16eb9a5eb0b9c8efb5c9c964c7e2404c1e2c8a61[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 07:25:10 2025 -0800
+
+    yoooo this version worksssss. It probably doesn't if you have embedded rotatins or something but I am just really glad it's working and am not going to complain. regular vanilla models seem to be happy, and most mods will be too
+
+[33mcommit abaf42d0b4b1ee86caf78e5e64e230f8f637bb90[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 06:33:11 2025 -0800
+
+    cuboids being all silly and goofy
+
+[33mcommit 040c9381244b53762898e2f229aa100b5d90f1da[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 03:23:00 2025 -0800
+
+    actually commiting before I'm ready to push for once. just did some stuff I don't want to retype
+
+[33mcommit b8f90e10486af64d23e3216d83d99b9a8eeef442[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 8 02:24:14 2025 -0800
+
+    well I tried to get sodium supported, despite everything. Got pretty far too. Still, chestplate leggins don't work so there is still some underlying strangeness to deal with
+
+[33mcommit fc9031340428518f2610ea15f1dd133625b131e9[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 18:15:15 2025 -0800
+
+    fixed saved alwyas writting to the armor list instead of picking the correct one
+
+[33mcommit 958abd5bb95c5a42f12741219293e66b68df7569[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 11:20:29 2025 -0800
+
+    Actually added all the categories to the config. Still no translation strings. I'm so tired I need to go to sleep.
+
+[33mcommit 7968d9d7e934180e7b6f27c554f6be646bc0a9fd[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 11:07:13 2025 -0800
+
+    had to make the tiny float option a slider because Yet Another Config Library bug (yes yet another one)
+
+[33mcommit 8148da04f901812d05e6e932a6e3a0b48e187196[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 10:53:03 2025 -0800
+
+    config done, except it's really janky because of a YACL bug in the latest version. Hoepfully it gets resolved
+
+[33mcommit 0fa17752144b56b2dcff966e457ad44acbfc5ead[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 07:38:01 2025 -0800
+
+    still not working but the bug I have been trying to solve is resolved so yay
+
+[33mcommit 96021a7bf18810266304a0058e46bf8499eb7f27[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sun Dec 7 07:07:36 2025 -0800
+
+    got pretty far through adding the dropdown menus not done yet but made some progress and should commit
+
+[33mcommit 7bf267ce77eae35229d0696f5116665e0eadfbfc[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sat Dec 6 20:02:55 2025 -0800
+
+    added trident entity renderer support
+
+[33mcommit 808fcaf53b77a7e56766f217d2d17e54e43d1d2b[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Sat Dec 6 17:41:14 2025 -0800
+
+    added simple YACL config
+
+[33mcommit e9c0e637e5e33af6d1a2a33fd2a3893384190038[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 5 06:48:30 2025 -0800
+
+    full config file now which is fully used durring render calls
+
+[33mcommit 60aad817bdb425c11bbc431ea167c4aa71bd6130[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 5 05:39:22 2025 -0800
+
+    changed render double sided to actually use no cull instead of redrawing faces, as well as a bit of restructuring
+
+[33mcommit 9899a3af71cfd7dfd170c4df0f356c79c2af23f5[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 5 04:20:05 2025 -0800
+
+    Special items now are customizeable
+
+[33mcommit d2657629a6abba1c239e6c02cdb7ff7074c4a92d[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 5 02:06:52 2025 -0800
+
+    fixed glint layers not working in third person
+
+[33mcommit 3e149fc37c7f09aa0b20156b0e128d5d21738742[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Fri Dec 5 01:58:29 2025 -0800
+
+    started adding item filter for rendering, currently only works for normal rendering. Sadly I also realized that the outline for the normal items in third person has been broken for a while, and needs to be patched next
+
+[33mcommit 447ec513cf9b67c7f9a8fb5c82162996f43a9073[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 4 23:00:59 2025 -0800
+
+    may have jumped the gun a bit on that last commit. With further testing this now works correctly. it DOES have the side effect that double sided with glint on get twice as strong glint effects but I don't really care that much
+
+[33mcommit ac36cd3bb3b50a60e2cbf7d93958f2dde623b094[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 4 22:41:49 2025 -0800
+
+    added automatic double sided render layer support (ex. armor)
+
+[33mcommit ebd538c3dfd02fa570325b412e1f5bec6adbdc20[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 4 18:44:25 2025 -0800
+
+    with armor done, every render type now has a transparent outline
+
+[33mcommit 5082dd193b21292d041ace78ceb3d4d8f4e22b8c[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 4 16:27:11 2025 -0800
+
+    removed a render call that was not doing anything since the render pipleine is strange. Sadly no Zfix for armor
+
+[33mcommit e7459aa026b2611645795230b85cdb717ee8891e[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Thu Dec 4 16:23:34 2025 -0800
+
+    fixed the renderering order for models and model parts
+
+[33mcommit 01b4e5d861d6b856eeba1087d5fda3b241f9616c[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Wed Dec 3 22:19:26 2025 -0800
+
+    YESS ARMOR IS NOW THERE. still need to add transparency and ZFIX to it, and render double sided if the render layer is double sided
+
+[33mcommit 3d147a0f8e36c62449e4d39c14f88619265b887d[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Wed Dec 3 18:28:00 2025 -0800
+
+    this didn't improve the problem at all but it's stable at least and I made some attemts and I want to push some things I realizeed were wrong
+
+[33mcommit b6787588b36952efe47c4745a731a6e7a34463ad[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Wed Dec 3 14:46:07 2025 -0800
+
+    got the model renderer actually working properly for things like armor. Now all that's left is render layer stuff
+
+[33mcommit ef43b70de6004c50451269482f5c4edb307b7d30[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Wed Dec 3 03:06:18 2025 -0800
+
+    some cleaning and improvements to the render solid system
+
+[33mcommit 452ae2446a3b5df41dab3dbc92e22e70c6b1a5b1[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Tue Dec 2 19:03:50 2025 -0800
+
+    okay we FINALLY got it workin. It would probably help if I ahd experience with resource packs and understood how models work but we got there eventually, and now I get it. Now just to actually clean up and make everything easier to edit
+
+[33mcommit c98e7857ffba199a308178ee44e39f73dc80fd43[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Tue Dec 2 18:20:56 2025 -0800
+
+    works for special items now, but not for trident specifically for some reason
+
+[33mcommit 8a0349b0e0814a575fa7e6de06746ab6f3fbe780[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Tue Dec 2 08:37:58 2025 -0800
+
+    better to push than not to. Not sure what I did exactly, but textures are *somewhere* in the render layer now and also it doesn't immediately crash
+
+[33mcommit 4b617519f7bc04a885e2563d94d2342be6770929[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Tue Dec 2 02:06:44 2025 -0800
+
+    totally forgot to commit in between. Got itemCutout working up to parody with the original version, and even managed to figure out a patch to the most annoying bug in my opinion. Don't know why I didn't think of it sooner
+
+[33mcommit 482a81de21ec3efc2e438f1947c12a296cce1057[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 1 20:57:50 2025 -0800
+
+    first working glint outline render. Render layers still out of order
+
+[33mcommit 433fd26a1452eb60a576c002a2035b3edd600749[m
+Author: Da0neDatGotAway <43645756+Da0neDatGotAway@users.noreply.github.com>
+Date:   Mon Dec 1 17:38:03 2025 -0800
+
+    first commit of the rewrite. Just some boilerplate stuff

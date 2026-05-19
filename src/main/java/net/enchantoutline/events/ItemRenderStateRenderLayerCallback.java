@@ -2,24 +2,24 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.item.ItemRenderState;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.ActionResult;
 
 public interface ItemRenderStateRenderLayerCallback {
     Event<ItemRenderStateRenderLayerCallback> EVENT = EventFactory.createArrayBacked(ItemRenderStateRenderLayerCallback.class,
             (listeners) -> (receiver, layerRenderState, matrices, orderedRenderCommandQueue, light, overlay, i) -> {
                 for (ItemRenderStateRenderLayerCallback listener : listeners) {
-                    InteractionResult result = listener.onRender(receiver, layerRenderState, matrices, orderedRenderCommandQueue, light, overlay, i);
+                    ActionResult result = listener.onRender(receiver, layerRenderState, matrices, orderedRenderCommandQueue, light, overlay, i);
 
-                    if (result != InteractionResult.PASS) {
+                    if (result != ActionResult.PASS) {
                         return result;
                     }
                 }
 
-                return InteractionResult.PASS;
+                return ActionResult.PASS;
             });
 
-    InteractionResult onRender(ItemStackRenderState receiver, ItemStackRenderState.LayerRenderState layerRenderState, PoseStack matrices, SubmitNodeCollector orderedRenderCommandQueue, int light, int overlay, int i);
+    ActionResult onRender(ItemRenderState receiver, ItemRenderState.LayerRenderState layerRenderState, MatrixStack matrices, OrderedRenderCommandQueue orderedRenderCommandQueue, int light, int overlay, int i);
 }

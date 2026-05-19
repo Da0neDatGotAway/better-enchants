@@ -2,9 +2,10 @@ package net.enchantoutline.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.logging.LogUtils;
 import net.enchantoutline.EnchantmentGlintOutline;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -29,7 +30,6 @@ public class EnchantmentOutlineConfig {
     public static final float MAX_OUTLINE_SIZE = 30;
 
     public boolean enabled = true;
-    public boolean removeRenderPass = true;
     public float outline_size = 20;
     public boolean render_solid = false;
     public int[] render_solid_outline_color_rgb = {210,150,248};
@@ -47,14 +47,6 @@ public class EnchantmentOutlineConfig {
 
     public boolean isEnabled(){
         return enabled;
-    }
-
-    public void setRemoveRenderPass(boolean remove){
-        removeRenderPass = remove;
-    }
-
-    public boolean shouldRemoveRenderPass(){
-        return removeRenderPass;
     }
 
     public void setOutlineSize(float outlineSize){
@@ -84,11 +76,11 @@ public class EnchantmentOutlineConfig {
 
     public void setBaseSolidOutlineColorAsInt(int color)
     {
-        color = ARGB.color(255, color);
+        color = ColorHelper.withAlpha(255, color);
         int[] newOutlineColor = new int[3];
-        newOutlineColor[0] = ARGB.red(color);
-        newOutlineColor[1] = ARGB.green(color);
-        newOutlineColor[2] = ARGB.blue(color);
+        newOutlineColor[0] = ColorHelper.getRed(color);
+        newOutlineColor[1] = ColorHelper.getGreen(color);
+        newOutlineColor[2] = ColorHelper.getBlue(color);
         render_solid_outline_color_rgb = newOutlineColor;
     }
 
@@ -97,7 +89,7 @@ public class EnchantmentOutlineConfig {
         if(outlineColorInt.length < 3){
             return -1;
         }
-        return ARGB.color(255,ARGB.color((outlineColorInt[0]), (outlineColorInt[1]), (outlineColorInt[2])));
+        return ColorHelper.withAlpha(255,ColorHelper.getArgb((outlineColorInt[0]), (outlineColorInt[1]), (outlineColorInt[2])));
     }
 
     public void setRenderArmor(boolean renderArmor){

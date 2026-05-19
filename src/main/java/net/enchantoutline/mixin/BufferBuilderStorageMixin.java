@@ -2,17 +2,17 @@ package net.enchantoutline.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.enchantoutline.events.BufferBuilderModifyReturnValue;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.render.BufferBuilderStorage;
+import net.minecraft.client.render.VertexConsumerProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(RenderBuffers.class)
+@Mixin(BufferBuilderStorage.class)
 public class BufferBuilderStorageMixin {
-    @ModifyReturnValue(method = "bufferSource", at = @At("RETURN"))
-    private MultiBufferSource.BufferSource enchantOutline$getEntityVertexConsumers(MultiBufferSource.BufferSource original)
+    @ModifyReturnValue(method = "getEntityVertexConsumers", at = @At("RETURN"))
+    private VertexConsumerProvider.Immediate enchantOutline$getEntityVertexConsumers(VertexConsumerProvider.Immediate original)
     {
-        MultiBufferSource.BufferSource result = BufferBuilderModifyReturnValue.EVENT.invoker().getVertexProvider(original);
+        VertexConsumerProvider.Immediate result = BufferBuilderModifyReturnValue.EVENT.invoker().getVertexProvider(original);
 
         if(result != null){
             return result;

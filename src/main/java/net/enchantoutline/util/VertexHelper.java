@@ -1,6 +1,6 @@
 package net.enchantoutline.util;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -185,8 +185,8 @@ public class VertexHelper {
 
 
 
-    public static Vector3f transformVector(PoseStack matrices, Vector3f vec) {
-        Matrix4f mat = matrices.last().pose();
+    public static Vector3f transformVector(MatrixStack matrices, Vector3f vec) {
+        Matrix4f mat = matrices.peek().getPositionMatrix();
 
         Vector4f vec4 = new Vector4f(vec.x(), vec.y(), vec.z(), 1.0f);
         mat.transform(vec4);

@@ -2,7 +2,7 @@ package net.enchantoutline.mixin.sodium;
 
 import net.caffeinemc.mods.sodium.client.render.immediate.model.ModelCuboid;
 import net.enchantoutline.util.ModelHelper;
-import net.minecraft.core.Direction;
+import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;

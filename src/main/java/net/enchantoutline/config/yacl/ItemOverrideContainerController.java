@@ -4,16 +4,20 @@ import dev.isxander.yacl3.api.Controller;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.StateManager;
 import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
+import dev.isxander.yacl3.api.controller.FloatFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.ItemControllerBuilder;
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.AbstractWidget;
 import dev.isxander.yacl3.gui.YACLScreen;
+import dev.isxander.yacl3.gui.controllers.string.number.FloatFieldController;
+import dev.isxander.yacl3.impl.controller.ColorControllerBuilderImpl;
+import dev.isxander.yacl3.impl.controller.FloatFieldControllerBuilderImpl;
 import dev.isxander.yacl3.impl.controller.TickBoxControllerBuilderImpl;
 import net.enchantoutline.config.EnchantmentOutlineConfig;
 import net.enchantoutline.config.ItemOverrideContainer;
-import net.minecraft.world.item.Item;
-import net.minecraft.network.chat.Component;
+import net.minecraft.item.Item;
+import net.minecraft.text.Text;
 
 import java.awt.*;
 
@@ -31,10 +35,10 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
     public ItemOverrideContainerController(Option<ItemOverrideContainer> option, ItemOverrideContainer defaultItemOverrideContainer){
         this.option = option;
         itemOption = Option.<Item>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 //as much as I want the names YACL is broken ATM so I can't : (
-                //.name(Component.translatable("controller.enchantoutline.itemoverride.item"))
-                //.description(OptionDescription.of(Component.translatable("tooltip.controller.enchantoutline.itemoverride.item")))
+                //.name(Text.translatable("controller.enchantoutline.itemoverride.item"))
+                //.description(OptionDescription.of(Text.translatable("tooltip.controller.enchantoutline.itemoverride.item")))
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItem(),() -> {return option.pendingValue().getItem();},
                                 (item) -> {
                                     ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -43,7 +47,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                 .controller(ItemControllerBuilder::create)
                 .build();
         renderOption = Option.<Boolean>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().shouldRender(), () -> {return option.pendingValue().getItemOverride().shouldRender();},
                         (render) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -53,7 +57,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                 .controller(TickBoxControllerBuilderImpl::new)
                 .build();
         overrideSizeOption = Option.<Boolean>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().shouldOverrideOutlineSize(), () -> {return option.pendingValue().getItemOverride().shouldOverrideOutlineSize();},
                         (override) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -65,7 +69,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
         //TODO: when YACL gets a fix update this to be a slider
         //it had to be a slider anyway despite being tiny because you can't edit float fields for some reason YACL why
         sizeOption = Option.<Float>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().getOutlineSize(), () -> {return option.pendingValue().getItemOverride().getOutlineSize();},
                         (size) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -78,7 +82,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                         .formatValue(new FloatValueFormatter(0)))
                 .build();
         overrideRenderSolidOption = Option.<Boolean>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().shouldOverrideRenderSolid(), () -> {return option.pendingValue().getItemOverride().shouldOverrideRenderSolid();},
                         (override) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -88,7 +92,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                 .controller(TickBoxControllerBuilderImpl::new)
                 .build();
         renderSolidOption = Option.<Boolean>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().shouldRenderSolid(), () -> {return option.pendingValue().getItemOverride().shouldRenderSolid();},
                         (solid) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -98,7 +102,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                 .controller(TickBoxControllerBuilderImpl::new)
                 .build();
         overrideColorOption = Option.<Boolean>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(defaultItemOverrideContainer.getItemOverride().shouldOverrideRenderSolidOutlineColor(), () -> {return option.pendingValue().getItemOverride().shouldOverrideRenderSolidOutlineColor();},
                         (override) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -108,7 +112,7 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
                 .controller(TickBoxControllerBuilderImpl::new)
                 .build();
         colorOption = Option.<Color>createBuilder()
-                .name(Component.empty())
+                .name(Text.empty())
                 .stateManager(StateManager.createInstant(EnchantmentOutlineConfig.getColorFromInt(defaultItemOverrideContainer.getItemOverride().getRenderSolidOutlineColor()), () -> {return EnchantmentOutlineConfig.getColorFromInt(option.pendingValue().getItemOverride().getRenderSolidOutlineColor());},
                         (color) -> {
                             ItemOverrideContainer pending = new ItemOverrideContainer(option.pendingValue());
@@ -125,8 +129,8 @@ public class ItemOverrideContainerController implements Controller<ItemOverrideC
     }
 
     @Override
-    public Component formatValue() {
-        return Component.literal(option.toString());
+    public Text formatValue() {
+        return Text.literal(option.toString());
     }
 
     @Override

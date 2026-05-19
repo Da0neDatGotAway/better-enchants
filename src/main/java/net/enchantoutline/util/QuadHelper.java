@@ -1,10 +1,7 @@
 package net.enchantoutline.util;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.core.Vec3i;
+import net.minecraft.client.render.model.BakedQuad;
+import net.minecraft.util.math.Vec3i;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +16,7 @@ public class QuadHelper {
         for (BakedQuad quad : original) {
             Vector3f[] defaultVerts = {new Vector3f(quad.position0()), new Vector3f(quad.position1()), new Vector3f(quad.position2()), new Vector3f(quad.position3())};
 
-            Vec3i intVec = quad.direction().getUnitVec3i();
+            Vec3i intVec = quad.face().getVector();
             Vector3f faceVec = new Vector3f(intVec.getX(), intVec.getY(), intVec.getZ());
             faceVec.mul(percentSize);
 
@@ -29,7 +26,7 @@ public class QuadHelper {
                     Vector3f[] vertPoses = VertexHelper.growFace(defaultVerts, dir, faceVec);
 
                     //VertexHelper.flip(vertexData)
-                    BakedQuad enchantmentQuad = new BakedQuad(vertPoses[3], vertPoses[2], vertPoses[1], vertPoses[0], quad.packedUV3(), quad.packedUV2(), quad.packedUV1(), quad.packedUV0(), quad.direction().getOpposite(), quad.materialInfo());
+                    BakedQuad enchantmentQuad = new BakedQuad(vertPoses[3], vertPoses[2], vertPoses[1], vertPoses[0], quad.packedUV3(), quad.packedUV2(), quad.packedUV1(), quad.packedUV0(), 0, quad.face().getOpposite(), null, false, 100);
 
                     newQuads.add(enchantmentQuad);
                 }
@@ -39,16 +36,5 @@ public class QuadHelper {
             }
         }
         return newQuads;
-    }
-
-
-    public static void renderCustomGeometryFromQuads(PoseStack.Pose pose, VertexConsumer vc, List<BakedQuad> quads, int colorTint){
-            QuadInstance qi = new QuadInstance();
-            for (int v = 0; v < 4; v++) {
-                qi.setColor(v, colorTint);
-                qi.setLightCoords(v, Integer.MAX_VALUE);
-            }
-            qi.setOverlayCoords(0);
-            for (BakedQuad q : quads) vc.putBakedQuad(pose, q, qi);
     }
 }

@@ -3,13 +3,15 @@ package net.enchantoutline.events;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.command.ModelCommandRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.command.RenderCommandQueue;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 //again, purposefully not going to assign a type since I need generics
@@ -17,15 +19,15 @@ public interface TridentEntityRendererQueueEnchantedCallback<S> {
     Event<TridentEntityRendererQueueEnchantedCallback> EVENT = EventFactory.createArrayBacked(TridentEntityRendererQueueEnchantedCallback.class,
             (listeners) -> ( queueHolder, queue, model, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand) -> {
                 for (TridentEntityRendererQueueEnchantedCallback listener : listeners) {
-                    InteractionResult result = listener.onQueue(queueHolder, queue, model, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+                    ActionResult result = listener.onQueue(queueHolder, queue, model, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
 
-                    if (result != InteractionResult.PASS) {
+                    if (result != ActionResult.PASS) {
                         return result;
                     }
                 }
 
-                return InteractionResult.PASS;
+                return ActionResult.PASS;
             });
 
-    InteractionResult onQueue(SubmitNodeCollector queueHolder, OrderedSubmitNodeCollector queue, Model<? super S> model, S s, PoseStack matrixStack, RenderType renderLayer, int light, int overlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlayCommand);
+    ActionResult onQueue(OrderedRenderCommandQueue queueHolder, RenderCommandQueue queue, Model<? super S> model, S s, MatrixStack matrixStack, RenderLayer renderLayer, int light, int overlay, int tintColor, @Nullable Sprite sprite, int outlineColor, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlayCommand);
 }

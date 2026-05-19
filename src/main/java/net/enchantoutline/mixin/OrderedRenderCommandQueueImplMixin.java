@@ -2,30 +2,28 @@ package net.enchantoutline.mixin;
 
 import net.enchantoutline.events.RenderQuads;
 import net.enchantoutline.mixin_accessors.OrderedRenderCommandQueueImplAccessor;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.command.ModelCommandRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueueImpl;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(SubmitNodeStorage.class)
+@Mixin(OrderedRenderCommandQueueImpl.class)
 public class OrderedRenderCommandQueueImplMixin implements OrderedRenderCommandQueueImplAccessor {
-    @Inject(method = "submitModelPart(Lnet/minecraft/client/model/geom/ModelPart;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ZZILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;I)V", at = @At("HEAD"), cancellable = true)
-    void enchant$submitModelPart(ModelPart part, PoseStack matrices, RenderType renderLayer, int light, int overlay, TextureAtlasSprite sprite, boolean sheeted, boolean hasGlint, int tintedColor, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int i, CallbackInfo ci){
+    //jank? what jank? It's too late for me to be programming rn
+    @Inject(method = "submitModelPart", at = @At("HEAD"), cancellable = true)
+    void enchant$submitModelPart(ModelPart part, MatrixStack matrices, RenderLayer renderLayer, int light, int overlay, Sprite sprite, boolean sheeted, boolean hasGlint, int tintedColor, ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay, int i, CallbackInfo ci){
         if(!skipModelPartCallback){
-            InteractionResult result = RenderQuads.Model.ModelPart.EVENT.invoker().callback((SubmitNodeStorage)(Object)this, part, matrices, renderLayer, light, overlay, sprite, sheeted, hasGlint, tintedColor, crumblingOverlay, i);
+            ActionResult result = RenderQuads.Model.ModelPart.EVENT.invoker().callback((OrderedRenderCommandQueueImpl)(Object)this, part, matrices, renderLayer, light, overlay, sprite, sheeted, hasGlint, tintedColor, crumblingOverlay, i);
 
-            if(result == InteractionResult.FAIL){
+            if(result == ActionResult.FAIL){
                 ci.cancel();
             }
         }

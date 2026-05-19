@@ -2,8 +2,8 @@ package net.enchantoutline.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.enchantoutline.mixin_accessors.RenderLayerAccessor;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderSetup;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,22 +11,20 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(RenderType.class)
+@Mixin(RenderLayer.class)
 public class RenderLayerMixin implements RenderLayerAccessor {
 
     @Shadow
     @Final
-    private RenderSetup state;
+    private RenderSetup renderSetup;
 
-    @ModifyReturnValue(method = "canConsolidateConsecutiveGeometry", at = @At("RETURN"))
-    private boolean enchantOutline$canConsolidateConsecutiveGeometry(boolean original){
-        // Yarn's areVerticesNotShared inverts to Mojang's canConsolidateConsecutiveGeometry.
-        // If any listener says "vertices not shared", consolidation is disallowed.
-        @Nullable Boolean result = net.enchantoutline.events.RenderLayer.AreVerticesNotSharedCallback.EVENT.invoker().getVerticesNotShared((RenderType) (Object)this, !original);
+    @ModifyReturnValue(method = "areVerticesNotShared", at = @At("RETURN"))
+    private boolean enchantOutline$areVerticesNotShared(boolean original){
+        @Nullable Boolean result = net.enchantoutline.events.RenderLayer.AreVerticesNotSharedCallback.EVENT.invoker().getVerticesNotShared((RenderLayer) (Object)this, original);
 
         if(result != null)
         {
-            return true;
+            return false;
         }
         return original;
     }
@@ -40,7 +38,7 @@ public class RenderLayerMixin implements RenderLayerAccessor {
 
     @Override
     public RenderSetup enchantOutline$getRenderSetup() {
-        return state;
+        return renderSetup;
     }
 
     @Override

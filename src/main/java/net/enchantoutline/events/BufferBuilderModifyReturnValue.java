@@ -2,14 +2,14 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.render.VertexConsumerProvider;
 import org.jetbrains.annotations.Nullable;
 
 public interface BufferBuilderModifyReturnValue {
     Event<BufferBuilderModifyReturnValue> EVENT = EventFactory.createArrayBacked(BufferBuilderModifyReturnValue.class,
             (listeners) -> (original) -> {
                 for (BufferBuilderModifyReturnValue listener : listeners) {
-                    @Nullable MultiBufferSource.BufferSource result = listener.getVertexProvider(original);
+                    @Nullable VertexConsumerProvider.Immediate result = listener.getVertexProvider(original);
 
                     if (result != null) {
                         return result;
@@ -19,5 +19,5 @@ public interface BufferBuilderModifyReturnValue {
                 return null;
             });
 
-    @Nullable MultiBufferSource.BufferSource getVertexProvider(MultiBufferSource.BufferSource original);
+    @Nullable VertexConsumerProvider.Immediate getVertexProvider(VertexConsumerProvider.Immediate original);
 }

@@ -1,10 +1,11 @@
 package net.enchantoutline.mixin_accessors;
 
-import net.minecraft.core.Direction;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.util.math.Direction;
 
 import java.util.Set;
 
-public interface ModelPart_CubeAccessor {
+public interface ModelPart_CuboidAccessor {
     public int enchantOutline$getU();
     public int enchantOutline$getV();
     public float enchantOutline$getExtraX();

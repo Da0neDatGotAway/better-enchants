@@ -1,15 +1,15 @@
 package net.enchantoutline.config;
 
-import net.minecraft.world.item.Item;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 public class ItemOverrideContainer {
     private String item;
     private final ItemOverride override;
 
     public ItemOverrideContainer(){
-        this(BuiltInRegistries.ITEM.getKey(null).toString(), new ItemOverride());
+        this(Registries.ITEM.getId(null).toString(), new ItemOverride());
     }
     public ItemOverrideContainer(ItemOverrideContainer from) {
         item = from.item;
@@ -28,11 +28,11 @@ public class ItemOverrideContainer {
     public String getItemString(){return item;}
 
     public void setItem(Item item){
-        this.item = BuiltInRegistries.ITEM.getKey(item).toString();
+        this.item = Registries.ITEM.getId(item).toString();
     }
 
     public Item getItem(){
-        return BuiltInRegistries.ITEM.getValue(Identifier.parse(item));
+        return Registries.ITEM.get(Identifier.of(item));
     }
 
     public ItemOverride getItemOverride(){

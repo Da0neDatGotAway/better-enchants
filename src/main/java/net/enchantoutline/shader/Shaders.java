@@ -1,24 +1,15 @@
 package net.enchantoutline.shader;
 
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-
-import java.util.Optional;
 import net.enchantoutline.EnchantmentGlintOutline;
 import net.enchantoutline.mixin_accessors.RenderLayerAccessor;
-import com.mojang.blaze3d.textures.GpuSampler;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.TextureTransform;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.gl.GpuSampler;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.util.Identifier;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -27,136 +18,129 @@ public class Shaders {
     private static final String MOD_ID = EnchantmentGlintOutline.MOD_ID;
 
     //still don't know what I'm doing so just gonna do this
-    public static final RenderPipeline.Snippet OUTLINE_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
-            .withVertexShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
-            .withFragmentShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
+    public static final RenderPipeline.Snippet OUTLINE_SNIPPET = RenderPipeline.builder(RenderPipelines.TRANSFORMS_PROJECTION_FOG_SNIPPET)
+            .withVertexShader(Identifier.of(MOD_ID, "core/outline"))
+            .withFragmentShader(Identifier.of(MOD_ID, "core/outline"))
             .withSampler("Sampler0")
             .withSampler("Sampler2")
-            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            .withVertexFormat(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS)
             .buildSnippet();
-
-    // depth-only: writes depth, no color. Used to lay down the outline stencil behind the item.
-    private static final ColorTargetState NO_COLOR = new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_NONE);
-    private static final DepthStencilState DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true);
-    // color-only: writes color, no depth. Used to draw the tinted outline on top of the stencil.
-    private static final ColorTargetState WRITE_COLOR = new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_ALL);
-    private static final DepthStencilState NO_DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false);
 
     public static final RenderPipeline CUTOUT_PIPELINE_DEPTH_CULL = RenderPipelines.register(
             RenderPipeline.builder(OUTLINE_SNIPPET)
-                    .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/cutout"))
+                    .withLocation(Identifier.of(MOD_ID, "pipeline/cutout"))
+                    .withDepthWrite(true)
+                    .withColorWrite(false)
                     .withCull(true)
-                    .withColorTargetState(NO_COLOR)
-                    .withDepthStencilState(DEPTH_WRITE)
                     .withShaderDefine("ALPHA_CUTOUT", 0.1F)
                     .build()
     );
 
     public static final RenderPipeline CUTOUT_PIPELINE_COLOR_CULL = RenderPipelines.register(
             RenderPipeline.builder(OUTLINE_SNIPPET)
-                    .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/cutout"))
+                    .withLocation(Identifier.of(MOD_ID, "pipeline/cutout"))
+                    .withDepthWrite(false)
+                    .withColorWrite(true)
                     .withCull(true)
-                    .withColorTargetState(WRITE_COLOR)
-                    .withDepthStencilState(NO_DEPTH_WRITE)
                     .withShaderDefine("ALPHA_CUTOUT", 0.1F)
                     .build()
     );
 
     public static final RenderPipeline CUTOUT_PIPELINE_DEPTH_NOCULL = RenderPipelines.register(
             RenderPipeline.builder(OUTLINE_SNIPPET)
-                    .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/cutout"))
+                    .withLocation(Identifier.of(MOD_ID, "pipeline/cutout"))
+                    .withDepthWrite(true)
+                    .withColorWrite(false)
                     .withCull(false)
-                    .withColorTargetState(NO_COLOR)
-                    .withDepthStencilState(DEPTH_WRITE)
                     .withShaderDefine("ALPHA_CUTOUT", 0.1F)
                     .build()
     );
 
     public static final RenderPipeline CUTOUT_PIPELINE_COLOR_NOCULL = RenderPipelines.register(
             RenderPipeline.builder(OUTLINE_SNIPPET)
-                    .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/cutout"))
+                    .withLocation(Identifier.of(MOD_ID, "pipeline/cutout"))
+                    .withDepthWrite(false)
+                    .withColorWrite(true)
                     .withCull(false)
-                    .withColorTargetState(WRITE_COLOR)
-                    .withDepthStencilState(NO_DEPTH_WRITE)
                     .withShaderDefine("ALPHA_CUTOUT", 0.1F)
                     .build()
     );
 
-    public static final RenderType GLINT_CUTOUT_LAYER = RenderType.create(
+    public static final RenderLayer GLINT_CUTOUT_LAYER = RenderLayer.of(
             "enchout_glint_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
-                    .affectsCrumbling()
-                    .createRenderSetup()
+                    .texture("Sampler0", SpriteAtlasTexture.ITEMS_ATLAS_TEXTURE, RenderLayers.BLOCK_SAMPLER)
+                    .crumbling()
+                    .build()
     );
 
-    public static final RenderType COLOR_CUTOUT_LAYER = RenderType.create(
+    public static final RenderLayer COLOR_CUTOUT_LAYER = RenderLayer.of(
             "enchnout_color_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
-                    .affectsCrumbling()
-                    .createRenderSetup()
+                    .texture("Sampler0", SpriteAtlasTexture.ITEMS_ATLAS_TEXTURE, RenderLayers.BLOCK_SAMPLER)
+                    .crumbling()
+                    .build()
     );
 
-    public static final RenderType ZFIX_CUTOUT_LAYER = RenderType.create(
+    public static final RenderLayer ZFIX_CUTOUT_LAYER = RenderLayer.of(
             "enchout_zfix_normal",
             RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                     .useLightmap()
-                    .withTexture("Sampler0", TextureAtlas.LOCATION_ITEMS)
-                    .affectsCrumbling()
-                    .createRenderSetup()
+                    .texture("Sampler0", SpriteAtlasTexture.ITEMS_ATLAS_TEXTURE, RenderLayers.BLOCK_SAMPLER)
+                    .crumbling()
+                    .build()
     );
 
-    public static final RenderType ARMOR_ENTITY_GLINT_FIX = RenderType.create(
-            "enchout_glint_armor",
+    public static final RenderLayer ARMOR_ENTITY_GLINT_FIX = RenderLayer.of(
+            "enchantoutline_armor_glint",
             RenderSetup.builder(RenderPipelines.GLINT)
                     .useLightmap()
-                    .withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ARMOR)
-                    .setTextureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING)
-                    .affectsCrumbling()
-                    .createRenderSetup()
+                    .texture("Sampler0", ItemRenderer.ENTITY_ENCHANTMENT_GLINT)
+                    .textureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING)
+                    .crumbling()
+                    .build()
     );
 
-    public static RenderType createGlintRenderLayerCull(Map<String, Identifier> specMap){
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
+    public static RenderLayer createGlintRenderLayerCull(Map<String, TextureSpec> specMap){
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL)
                 .useLightmap()
-                .affectsCrumbling();
+                .crumbling();
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue());
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
-        return RenderType.create("enchout_glint_model", builder.createRenderSetup());
+        return RenderLayer.of("enchout_glint_model", builder.build());
     }
 
-    public static RenderType createGlintRenderLayerNoCull(Map<String, Identifier> specMap) {
+    public static RenderLayer createGlintRenderLayerNoCull(Map<String, TextureSpec> specMap) {
 
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL)
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL)
                 .useLightmap()
-                .affectsCrumbling();
+                .crumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue());
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
 
-        return RenderType.create("enchout_glint_model", builder.createRenderSetup());
+        return RenderLayer.of("enchout_glint_model", builder.build());
     }
 
-    public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap) {
+    public static RenderLayer createColorRenderLayerCull(Map<String, TextureSpec> specMap) {
         return createColorRenderLayerCull(specMap, true);
     }
 
     //no overlay, whatever that means
-    public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap, boolean before) {
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
+    public static RenderLayer createColorRenderLayerCull(Map<String, TextureSpec> specMap, boolean before) {
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
                 .useLightmap()
-                .affectsCrumbling();
+                .crumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue());
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
 
-        RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
+        RenderLayer layer = RenderLayer.of("enchout_color_model", builder.build());
 
         RenderLayerAccessor accessor = (RenderLayerAccessor)layer;
         accessor.enchantOutline$setDrawBeforeCustom(before);
@@ -164,21 +148,21 @@ public class Shaders {
         return layer;
     }
 
-    public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap) {
+    public static RenderLayer createColorRenderLayerNoCull(Map<String, TextureSpec> specMap) {
         return createColorRenderLayerNoCull(specMap ,true);
     }
 
     //again no overlay
-    public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap, boolean before) {
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_NOCULL)
+    public static RenderLayer createColorRenderLayerNoCull(Map<String, TextureSpec> specMap, boolean before) {
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_NOCULL)
                 .useLightmap()
-                .affectsCrumbling();
+                .crumbling();
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue());
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
 
-        RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
+        RenderLayer layer = RenderLayer.of("enchout_color_model", builder.build());
 
         RenderLayerAccessor accessor = (RenderLayerAccessor)layer;
         accessor.enchantOutline$setDrawBeforeCustom(before);
@@ -186,26 +170,26 @@ public class Shaders {
         return layer;
     }
 
-    public static RenderType createZFixRenderLayerCull(Map<String, Identifier> specMap) {//TextureSpec
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL);
+    public static RenderLayer createZFixRenderLayerCull(Map<String, TextureSpec> specMap) {
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_CULL);
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue()/*, entry.getValue().sampler()*/);
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
 
-        return RenderType.create("enchout_zfix_model", builder.createRenderSetup());
+        return RenderLayer.of("enchout_zfix_model", builder.build());
     }
 
-    public static RenderType createZFixRenderLayerNoCull(Map<String, Identifier> specMap) {//TextureSpec
-        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL);
+    public static RenderLayer createZFixRenderLayerNoCull(Map<String, TextureSpec> specMap) {
+        RenderSetup.Builder builder = RenderSetup.builder(CUTOUT_PIPELINE_DEPTH_NOCULL);
 
         for(var entry : specMap.entrySet()){
-            builder = builder.withTexture("Sampler0", entry.getValue()/*, entry.getValue().sampler()*/);
+            builder = builder.texture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
 
-        return RenderType.create("enchout_zfix_model", builder.createRenderSetup());
+        return RenderLayer.of("enchout_zfix_model", builder.build());
     }
 
-    /*public static record TextureSpec(Identifier location, Supplier<GpuSampler> sampler) {
-    }*/
+    public static record TextureSpec(Identifier location, Supplier<GpuSampler> sampler) {
+    }
 }

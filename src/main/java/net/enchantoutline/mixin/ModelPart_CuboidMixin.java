@@ -1,9 +1,9 @@
 package net.enchantoutline.mixin;
 
-import net.enchantoutline.mixin_accessors.ModelPart_CubeAccessor;
+import net.enchantoutline.mixin_accessors.ModelPart_CuboidAccessor;
 import net.enchantoutline.util.ModelHelper;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.core.Direction;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.ArrayUtils;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashSet;
 import java.util.Set;
 
-@Mixin(ModelPart.Cube.class)
-public class ModelPart_CubeMixin implements ModelPart_CubeAccessor {
+@Mixin(ModelPart.Cuboid.class)
+public class ModelPart_CuboidMixin implements ModelPart_CuboidAccessor {
     @Shadow
     @Final
     @Mutable
-    public ModelPart.Polygon[] polygons;
+    public ModelPart.Quad[] sides;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     void enchantOutline$storeOnInit(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, Set<Direction> sides, CallbackInfo ci){
@@ -33,7 +33,7 @@ public class ModelPart_CubeMixin implements ModelPart_CubeAccessor {
         this.directions = new HashSet<>(sides);
 
         if(ModelHelper.FLIP_CUBOIDS.get()){
-            for (ModelPart.Polygon quad : this.polygons){
+            for (ModelPart.Quad quad : this.sides){
                 ArrayUtils.swap(quad.vertices(), 0, 3);
                 ArrayUtils.swap(quad.vertices(), 1, 2);
             }

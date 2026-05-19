@@ -2,6 +2,8 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.Nullable;
 
 public interface RenderLayer {
@@ -19,6 +21,6 @@ public interface RenderLayer {
                     return null;
                 });
 
-        @Nullable Boolean getVerticesNotShared(net.minecraft.client.renderer.rendertype.RenderType receiver, boolean original);
+        @Nullable Boolean getVerticesNotShared(net.minecraft.client.render.RenderLayer receiver, boolean original);
     }
 }

@@ -2,27 +2,28 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.item.ItemModel;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.world.entity.ItemOwner;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.client.item.ItemModelManager;
+import net.minecraft.client.render.item.ItemRenderState;
+import net.minecraft.client.render.item.model.ItemModel;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.ItemDisplayContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.HeldItemContext;
+
 public interface ItemModelManagerUpdateModelCallback {
     Event<ItemModelManagerUpdateModelCallback> EVENT = EventFactory.createArrayBacked(ItemModelManagerUpdateModelCallback.class,
             (listeners) -> (receiver, model, itemRenderState, itemStack, itemModelManager, itemDisplayContext, clientWorld, heldItemContext, seed) -> {
                 for (ItemModelManagerUpdateModelCallback listener : listeners) {
-                    InteractionResult result = listener.onUpdate(receiver, model, itemRenderState, itemStack, itemModelManager, itemDisplayContext, clientWorld, heldItemContext, seed);
+                    ActionResult result = listener.onUpdate(receiver, model, itemRenderState, itemStack, itemModelManager, itemDisplayContext, clientWorld, heldItemContext, seed);
 
-                    if (result != InteractionResult.PASS) {
+                    if (result != ActionResult.PASS) {
                         return result;
                     }
                 }
 
-                return InteractionResult.PASS;
+                return ActionResult.PASS;
             });
 
-    InteractionResult onUpdate(ItemModelResolver receiver, ItemModel model, ItemStackRenderState itemRenderState, ItemStack itemStack, ItemModelResolver itemModelManager, ItemDisplayContext itemDisplayContext, ClientLevel clientWorld, ItemOwner heldItemContext, int seed);
+    ActionResult onUpdate(ItemModelManager receiver, ItemModel model, ItemRenderState itemRenderState, ItemStack itemStack, ItemModelManager itemModelManager, ItemDisplayContext itemDisplayContext, ClientWorld clientWorld, HeldItemContext heldItemContext, int seed);
 }

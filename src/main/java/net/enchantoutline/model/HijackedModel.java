@@ -1,12 +1,10 @@
 package net.enchantoutline.model;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -14,12 +12,12 @@ import java.util.function.Function;
  */
 public class HijackedModel extends Model<Object> {
 
-    public HijackedModel(ModelPart root, Function<Identifier, RenderLayer> layerFactory) {
+    public HijackedModel(ModelPart root, Function<Identifier, RenderType> layerFactory) {
         super(root, layerFactory);
     }
 
     @Override
-    public void setAngles(Object state) {
+    public void setupAnim(Object state) {
         return;
     }
 }

@@ -2,42 +2,42 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.util.ActionResult;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.InteractionResult;
 
 public interface ImmediateRenderCurrentLayer {
     public static interface Before{
         Event<Before> EVENT = EventFactory.createArrayBacked(Before.class,
                 (listeners) -> (receiver, layer) -> {
                     for (Before listener : listeners) {
-                        ActionResult result = listener.callback(receiver, layer);
+                        InteractionResult result = listener.callback(receiver, layer);
 
-                        if (result != ActionResult.PASS) {
+                        if (result != InteractionResult.PASS) {
                             return result;
                         }
                     }
 
-                    return ActionResult.PASS;
+                    return InteractionResult.PASS;
                 });
 
-        ActionResult callback(VertexConsumerProvider.Immediate receiver, RenderLayer layer);
+        InteractionResult callback(MultiBufferSource.BufferSource receiver, RenderType layer);
     }
 
     public static interface After{
         Event<After> EVENT = EventFactory.createArrayBacked(After.class,
                 (listeners) -> (receiver, layer) -> {
                     for (After listener : listeners) {
-                        ActionResult result = listener.post(receiver, layer);
+                        InteractionResult result = listener.post(receiver, layer);
 
-                        if (result != ActionResult.PASS) {
+                        if (result != InteractionResult.PASS) {
                             return result;
                         }
                     }
 
-                    return ActionResult.PASS;
+                    return InteractionResult.PASS;
                 });
 
-        ActionResult post(VertexConsumerProvider.Immediate receiver, RenderLayer layer);
+        InteractionResult post(MultiBufferSource.BufferSource receiver, RenderType layer);
     }
 }

@@ -26,7 +26,8 @@
 "group.enchantoutline.compatibility": "Compatibility",
 "tooltip.category.enchantoutline.compatibility": "Settings related to compatibility with other mods and features.",
 "option.compatibility.enchantoutline.skippass": "Skip Solid Entity Render Pass",
-"tooltip.option.compatibility.enchantoutline.skippass1": "Removes the solid entity render pass from the vanilla render pipeline. Minecraft 26.1 made players render later. Enabling this fixes the holes that appear in player models using the glint mode. ",
-"tooltip.option.compatibility.enchantoutline.skippass2": "\nMay cause instability or issues with many mods. If you are having issues please disable this setting."
+"tooltip.option.compatibility.enchantoutline.skippass1": "It is recommended to disable this setting for better results if you are planning on using RenderSolid.",
+"tooltip.option.compatibility.enchantoutline.skippass2": "\nMay cause instability or issues with many mods. If you are having issues please disable this setting.",
+"tooltip.option.compatibility.enchantoutline.skippass3": "\nRemoves the solid entity render pass from the vanilla render pipeline. Minecraft 26.1 made players render later. Enabling this fixes the holes that appear in player models using the glint mode."
 
 }

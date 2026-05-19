@@ -123,6 +123,17 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, glintLayer, (pose, vc) -> {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
 							});
+							RenderType enchantLayer = RenderTypes.glint();
+							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, enchantLayer, (pose, vc) -> {
+								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
+							});
+							//This is the correct way to do it, but I don't want to deal with the consequences right now
+							/*for(BakedQuad bakedQuad : quads){
+								((BakedQuad_MaterialInfoAccessor)((Object)bakedQuad.materialInfo())).setRenderLayer(glintLayer);
+							}*/
+
+							//orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, glintType);
+
 						}
 					}
 				}
@@ -163,7 +174,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							//instead of using render double-sided for this section it would probably be better to have a creation method for double sided layers. This would be a good improvement
 
 							//get render layer
-							RenderType glintLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
+							RenderType glintLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(renderLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
 
 							//render call
 							OrderedRenderCommandQueueImplAccessor commandQueueAccessor = (OrderedRenderCommandQueueImplAccessor) receiver;
@@ -230,12 +241,12 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 						}
 						else{
-							RenderType glintZLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
+							RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
-							queueHolder.submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
-							queueHolder.submitModel(thickGlintZModel, s, matrixStack, renderLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.submitModel(thickGlintZModel, s, matrixStack, glintZLayer, Integer.MAX_VALUE, 0, 0, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.submitModel(thickGlintZModel, s, matrixStack, renderLayer, Integer.MAX_VALUE, 0, 0, sprite, outlineColor, crumblingOverlayCommand);
 						}
 					}
 				}
@@ -348,6 +359,12 @@ public class EnchantmentGlintOutline implements ModInitializer {
 						}
 						buffers.put(set.getKey(), set.getValue());
 					}
+				}
+				LOGGER.info("Rendering Order");
+				int i = 0;
+				for(var set : clonedBuffer.entrySet()){
+					LOGGER.info("Current({}): {}", i, set.getKey());
+					i++;
 				}
 			}
 

@@ -116,7 +116,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 						}
 						else{
 							//render glint (by having Z write and Z test, but no color write after rendering the item, in other words write to the depth buffer)
-
+							//should do it properly with the item rendered but without a little bit of work that makes the item disappear so this patch until someone complains
 							RenderType glintLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(quads.getFirst().materialInfo().sprite(), GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							final int glintTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
@@ -127,13 +127,6 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							orderedRenderCommandQueue.submitCustomGeometry(matrixStack, enchantLayer, (pose, vc) -> {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
 							});
-							//This is the correct way to do it, but I don't want to deal with the consequences right now
-							/*for(BakedQuad bakedQuad : quads){
-								((BakedQuad_MaterialInfoAccessor)((Object)bakedQuad.materialInfo())).setRenderLayer(glintLayer);
-							}*/
-
-							//orderedRenderCommandQueue.submitItem(matrixStack, itemDisplayContext, 0, 0, 0, tintLayers, thickenedQuads, glintType);
-
 						}
 					}
 				}
@@ -359,12 +352,6 @@ public class EnchantmentGlintOutline implements ModInitializer {
 						}
 						buffers.put(set.getKey(), set.getValue());
 					}
-				}
-				LOGGER.info("Rendering Order");
-				int i = 0;
-				for(var set : clonedBuffer.entrySet()){
-					LOGGER.info("Current({}): {}", i, set.getKey());
-					i++;
 				}
 			}
 

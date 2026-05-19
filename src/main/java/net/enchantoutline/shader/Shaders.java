@@ -27,7 +27,7 @@ public class Shaders {
     private static final String MOD_ID = EnchantmentGlintOutline.MOD_ID;
 
     //still don't know what I'm doing so just gonna do this
-    public static final RenderPipeline.Snippet OUTLINE_SNIPPET = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+    public static final RenderPipeline.Snippet OUTLINE_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
             .withVertexShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
             .withFragmentShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
             .withSampler("Sampler0")

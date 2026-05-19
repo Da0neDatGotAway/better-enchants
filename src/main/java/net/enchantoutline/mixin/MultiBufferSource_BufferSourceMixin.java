@@ -2,6 +2,7 @@ package net.enchantoutline.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.logging.LogUtils;
 import net.enchantoutline.EnchantmentGlintOutline;
 import net.enchantoutline.events.ImmediateRenderCurrentLayer;
 import net.enchantoutline.mixin_accessors.MultiBufferSource_BufferSourceAccessor;
@@ -41,16 +42,6 @@ public class MultiBufferSource_BufferSourceMixin implements MultiBufferSource_Bu
 
             ImmediateRenderCurrentLayer.After.EVENT.invoker().post(instance, layer);
         }
-    }
-
-    @Inject(method = "endBatch()V", at = @At("HEAD"))
-    void enchantOutline$Debug2(CallbackInfo ci){
-        EnchantmentGlintOutline.Log1();
-    }
-
-    @Inject(method = "endBatch(Lnet/minecraft/client/renderer/rendertype/RenderType;)V", at = @At("HEAD"))
-    void enchantOutline$Debug1(RenderType type, CallbackInfo ci){
-        EnchantmentGlintOutline.Log2(type);
     }
 
     //@Inject(method = "draw(Lnet/minecraft/client/renderer/rendertype/RenderType;)V", at = @At(value = "HEAD"))

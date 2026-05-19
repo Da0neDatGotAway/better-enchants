@@ -3,6 +3,8 @@ package net.enchantoutline.mixin;
 import net.enchantoutline.events.RenderQuads;
 import net.enchantoutline.mixin_accessors.OrderedRenderCommandQueueImplAccessor;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
@@ -16,12 +18,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(SubmitNodeCollection.class)
+@Mixin(SubmitNodeStorage.class)
 public class OrderedRenderCommandQueueImplMixin implements OrderedRenderCommandQueueImplAccessor {
     @Inject(method = "submitModelPart(Lnet/minecraft/client/model/geom/ModelPart;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ZZILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;I)V", at = @At("HEAD"), cancellable = true)
     void enchant$submitModelPart(ModelPart part, PoseStack matrices, RenderType renderLayer, int light, int overlay, TextureAtlasSprite sprite, boolean sheeted, boolean hasGlint, int tintedColor, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int i, CallbackInfo ci){
         if(!skipModelPartCallback){
-            InteractionResult result = RenderQuads.Model.ModelPart.EVENT.invoker().callback((OrderedSubmitNodeCollector)(Object)this, part, matrices, renderLayer, light, overlay, sprite, sheeted, hasGlint, tintedColor, crumblingOverlay, i);
+            InteractionResult result = RenderQuads.Model.ModelPart.EVENT.invoker().callback((SubmitNodeStorage)(Object)this, part, matrices, renderLayer, light, overlay, sprite, sheeted, hasGlint, tintedColor, crumblingOverlay, i);
 
             if(result == InteractionResult.FAIL){
                 ci.cancel();

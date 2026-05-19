@@ -156,8 +156,8 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							//render call
 							OrderedRenderCommandQueueImplAccessor commandQueueAccessor = (OrderedRenderCommandQueueImplAccessor) receiver;
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(true);
-							receiver.submitModelPart(thickModelPart, matrices, colorLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
-							receiver.submitModelPart(thickModelPart, matrices, zFixLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
+							receiver.order(getColorBatchingQueue()).submitModelPart(thickModelPart, matrices, colorLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
+							receiver.order(getZFixBatchingQueue()).submitModelPart(thickModelPart, matrices, zFixLayer, Integer.MAX_VALUE, 0, sprite, sheeted, false, tint, crumblingOverlay, i);
 							commandQueueAccessor.enchantOutline$setSkipModelPartCallback(false);
 						} else {
 							//instead of using render double-sided for this section it would probably be better to have a creation method for double sided layers. This would be a good improvement
@@ -434,13 +434,5 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 		// Immediately save config to file to update any fields that may have changed.
 		config.saveAsync();
-	}
-
-	public static void Log1(){
-		EnchantmentGlintOutline.LOGGER.info("StartEndBatchRender");
-	}
-
-	public static void Log2(RenderType type){
-		EnchantmentGlintOutline.LOGGER.info("RenderingLayer: {}", type);
 	}
 }

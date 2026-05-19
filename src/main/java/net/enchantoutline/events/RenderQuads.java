@@ -2,6 +2,7 @@ package net.enchantoutline.events;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
@@ -64,7 +65,7 @@ public interface RenderQuads {
 
                         return InteractionResult.PASS;
                     });
-            InteractionResult callback(OrderedSubmitNodeCollector receiver, net.minecraft.client.model.geom.ModelPart part, PoseStack matrices, RenderType renderLayer, int light, int overlay, TextureAtlasSprite sprite, boolean sheeted, boolean hasGlint, int tintedColor, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int i);
+            InteractionResult callback(SubmitNodeStorage receiver, net.minecraft.client.model.geom.ModelPart part, PoseStack matrices, RenderType renderLayer, int light, int overlay, TextureAtlasSprite sprite, boolean sheeted, boolean hasGlint, int tintedColor, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int i);
         }
     }
 }

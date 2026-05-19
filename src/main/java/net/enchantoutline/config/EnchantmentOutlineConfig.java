@@ -29,6 +29,7 @@ public class EnchantmentOutlineConfig {
     public static final float MAX_OUTLINE_SIZE = 30;
 
     public boolean enabled = true;
+    public boolean removeRenderPass = true;
     public float outline_size = 20;
     public boolean render_solid = false;
     public int[] render_solid_outline_color_rgb = {210,150,248};
@@ -46,6 +47,14 @@ public class EnchantmentOutlineConfig {
 
     public boolean isEnabled(){
         return enabled;
+    }
+
+    public void setRemoveRenderPass(boolean remove){
+        removeRenderPass = remove;
+    }
+
+    public boolean shouldRemoveRenderPass(){
+        return removeRenderPass;
     }
 
     public void setOutlineSize(float outlineSize){

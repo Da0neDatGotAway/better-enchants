@@ -390,6 +390,14 @@ public class EnchantmentGlintOutline implements ModInitializer {
 		//---------- Mod Patches ----------
 
 		//--------- End Mod Patches ----------
+
+		//--------- Overwrite Vanilla ----------
+		WorldRendererFirstRenderMainPassCallback.EVENT.register(() -> {
+			if(getConfig().shouldRemoveRenderPass()){
+				return InteractionResult.FAIL;
+			}
+			return InteractionResult.PASS;
+		});
 	}
 
 	private static void initLayers(){

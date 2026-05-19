@@ -18,6 +18,7 @@
 		"RenderSetupAccessor",
 		"EquipmentRendererMixin",
 		"TextureAtlasSpriteMixin",
+		"LevelRendererMixin",
 
 		"sodium.ModelCuboidMixin"
 	],

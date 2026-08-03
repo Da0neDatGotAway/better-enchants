@@ -38,12 +38,16 @@ public class Shaders {
             .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .buildSnippet();
 
+    // 26.2 switched the depth buffer to reversed-Z: the far plane clears to 0.0 instead of 1.0 and
+    // every vanilla pipeline flipped LESS_THAN_OR_EQUAL -> GREATER_THAN_OR_EQUAL. Keeping the old
+    // comparison here inverts the depth test, which makes the outline show through whatever should
+    // occlude it and lets the depth-write pass corrupt the depth around the item.
     // depth-only: writes depth, no color. Used to lay down the outline stencil behind the item.
     private static final ColorTargetState NO_COLOR = new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_NONE);
-    private static final DepthStencilState DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true);
+    private static final DepthStencilState DEPTH_WRITE = new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true);
     // color-only: writes color, no depth. Used to draw the tinted outline on top of the stencil.
     private static final ColorTargetState WRITE_COLOR = new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL);
-    private static final DepthStencilState NO_DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false);
+    private static final DepthStencilState NO_DEPTH_WRITE = new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false);
 
     public static final RenderPipeline CUTOUT_PIPELINE_DEPTH_CULL = RenderPipelines.register(
             RenderPipeline.builder(OUTLINE_SNIPPET)

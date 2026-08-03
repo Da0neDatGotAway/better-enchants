@@ -3,7 +3,6 @@ package net.enchantoutline.util;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.enchantoutline.mixin.RenderSetupAccessor;
 import net.enchantoutline.mixin_accessors.RenderLayerAccessor;
-import net.enchantoutline.mixin_accessors.RenderPipelineAccessor;
 import net.enchantoutline.mixin_accessors.TextureAtlasSpriteAccessor;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -24,7 +23,8 @@ public class RenderLayerHelper {
         if(setup != null){
             RenderPipeline pipeline = ((RenderSetupAccessor)(Object)setup).enchantOutline$getPipeline();
             if(pipeline != null){
-                return !((RenderPipelineAccessor)pipeline).enchantOutline$getCull();
+                // 26.2: RenderPipeline.isCull() is public, no accessor mixin needed.
+                return !pipeline.isCull();
             }
         }
         return false;

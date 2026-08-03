@@ -5,20 +5,16 @@
 	"plugin": "net.enchantoutline.EnchantOutlineMixinPlugin",
 	"mixins": [
 		"ItemRenderState_LayerRenderStateMixin",
-		"BufferBuilderStorageMixin",
-		"MultiBufferSource_BufferSourceMixin",
 		"RenderLayerMixin",
 		"ModelPart_CubeMixin",
 		"ModelPartMixin",
-		"OrderedRenderCommandQueueImplMixin",
-		"RenderPipelineMixin",
+		"SubmitNodeCollectionMixin",
 		"ItemModelManagerMixin",
 		"ItemRenderStateMixin",
 		"TridentEntityRendererMixin",
 		"RenderSetupAccessor",
 		"EquipmentRendererMixin",
 		"TextureAtlasSpriteMixin",
-		"LevelRendererMixin",
 
 		"sodium.ModelCuboidMixin"
 	],

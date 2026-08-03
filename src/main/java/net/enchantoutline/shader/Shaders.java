@@ -1,16 +1,16 @@
 package net.enchantoutline.shader;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 import java.util.Optional;
 import net.enchantoutline.EnchantmentGlintOutline;
-import net.enchantoutline.mixin_accessors.RenderLayerAccessor;
-import com.mojang.blaze3d.textures.GpuSampler;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -26,20 +26,23 @@ import java.util.function.Supplier;
 public class Shaders {
     private static final String MOD_ID = EnchantmentGlintOutline.MOD_ID;
 
-    //still don't know what I'm doing so just gonna do this
+    // 26.2: samplers and the vertex format moved onto bind group layouts / explicit vertex bindings.
+    // MATRICES_FOG_SNIPPET already carries GLOBALS + MATRICES_PROJECTION + FOG, which is exactly what
+    // outline.vsh imports (globals/dynamictransforms/projection/fog). Sampler0 + Sampler2 come from
+    // SAMPLER0_SAMPLER2, matching the two `uniform sampler2D` declarations in the shader.
     public static final RenderPipeline.Snippet OUTLINE_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
             .withVertexShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
             .withFragmentShader(Identifier.fromNamespaceAndPath(MOD_ID, "core/outline"))
-            .withSampler("Sampler0")
-            .withSampler("Sampler2")
-            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
+            .withVertexBinding(0, DefaultVertexFormat.BLOCK)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .buildSnippet();
 
     // depth-only: writes depth, no color. Used to lay down the outline stencil behind the item.
-    private static final ColorTargetState NO_COLOR = new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_NONE);
+    private static final ColorTargetState NO_COLOR = new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_NONE);
     private static final DepthStencilState DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true);
     // color-only: writes color, no depth. Used to draw the tinted outline on top of the stencil.
-    private static final ColorTargetState WRITE_COLOR = new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_ALL);
+    private static final ColorTargetState WRITE_COLOR = new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL);
     private static final DepthStencilState NO_DEPTH_WRITE = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false);
 
     public static final RenderPipeline CUTOUT_PIPELINE_DEPTH_CULL = RenderPipelines.register(
@@ -142,12 +145,10 @@ public class Shaders {
         return RenderType.create("enchout_glint_model", builder.createRenderSetup());
     }
 
+    // 26.2: draw ordering no longer lives on the RenderType (there is no shared buffer map to splice
+    // into any more). It is expressed purely through SubmitNodeCollector.order(int) at submit time,
+    // so the old "draw before/after custom" flags are gone.
     public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap) {
-        return createColorRenderLayerCull(specMap, true);
-    }
-
-    //no overlay, whatever that means
-    public static RenderType createColorRenderLayerCull(Map<String, Identifier> specMap, boolean before) {
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_CULL)
                 .useLightmap()
                 .affectsCrumbling();
@@ -156,20 +157,10 @@ public class Shaders {
             builder = builder.withTexture("Sampler0", entry.getValue());
         }
 
-        RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
-
-        RenderLayerAccessor accessor = (RenderLayerAccessor)layer;
-        accessor.enchantOutline$setDrawBeforeCustom(before);
-        accessor.enchantOutline$setShouldUseLayerBuffer(!before);
-        return layer;
+        return RenderType.create("enchout_color_model", builder.createRenderSetup());
     }
 
     public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap) {
-        return createColorRenderLayerNoCull(specMap ,true);
-    }
-
-    //again no overlay
-    public static RenderType createColorRenderLayerNoCull(Map<String, Identifier> specMap, boolean before) {
         RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(CUTOUT_PIPELINE_COLOR_NOCULL)
                 .useLightmap()
                 .affectsCrumbling();
@@ -178,12 +169,7 @@ public class Shaders {
             builder = builder.withTexture("Sampler0", entry.getValue());
         }
 
-        RenderType layer = RenderType.create("enchout_color_model", builder.createRenderSetup());
-
-        RenderLayerAccessor accessor = (RenderLayerAccessor)layer;
-        accessor.enchantOutline$setDrawBeforeCustom(before);
-        accessor.enchantOutline$setShouldUseLayerBuffer(!before);
-        return layer;
+        return RenderType.create("enchout_color_model", builder.createRenderSetup());
     }
 
     public static RenderType createZFixRenderLayerCull(Map<String, Identifier> specMap) {//TextureSpec

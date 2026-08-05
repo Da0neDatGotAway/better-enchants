@@ -66,11 +66,11 @@ public class EnchantmentGlintOutline implements ModInitializer {
 		return -9124657;
 	}
 
-	public static int getZFixBatchingQueue(){
+	public static int getGlintBatchingQueue(){
 		return 9124657;
 	}
 
-    @Override
+	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
@@ -105,7 +105,7 @@ public class EnchantmentGlintOutline implements ModInitializer {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, colorTint);
 							});
 							final int zFixTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
-							collector.order(getZFixBatchingQueue()).submitCustomGeometry(matrixStack, zFixLayer, (pose, vc) -> {
+							collector.submitCustomGeometry(matrixStack, zFixLayer, (pose, vc) -> {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, zFixTint);
 							});
 
@@ -116,11 +116,11 @@ public class EnchantmentGlintOutline implements ModInitializer {
 							RenderType glintLayer = RenderLayerHelper.renderLayerFromSpriteDoubleSided(quads.getFirst().materialInfo().sprite(), GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							final int glintTint = tintLayers != null && tintLayers.length > 0 ? tintLayers[0] : 0xFFFFFFFF;
-							collector.order(getZFixBatchingQueue()).submitCustomGeometry(matrixStack, glintLayer, (pose, vc) -> {
+							collector.order(getGlintBatchingQueue()).submitCustomGeometry(matrixStack, glintLayer, (pose, vc) -> {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
 							});
 							RenderType enchantLayer = RenderTypes.glint();
-							collector.order(getZFixBatchingQueue()).submitCustomGeometry(matrixStack, enchantLayer, (pose, vc) -> {
+							collector.order(getGlintBatchingQueue()+1).submitCustomGeometry(matrixStack, enchantLayer, (pose, vc) -> {
 								QuadHelper.renderCustomGeometryFromQuads(pose, vc, thickenedQuads, glintTint);
 							});
 						}
@@ -176,11 +176,12 @@ public class EnchantmentGlintOutline implements ModInitializer {
 				RenderType zFixLayer = outlineLayer(textureSource, sprite, ZFIX_LAYERS, Shaders::createZFixRenderLayerNoCull, Shaders::createZFixRenderLayerCull, Shaders.ZFIX_CUTOUT_LAYER, isDoubleSided);
 
 				collector.order(getColorBatchingQueue()).submitModel(thickModel, state, poseStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlay);
-				collector.order(getZFixBatchingQueue()).submitModel(thickModel, state, poseStack, zFixLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlay);
+				collector.submitModel(thickModel, state, poseStack, zFixLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlay);
 			} else {
 				RenderType glintLayer = outlineLayer(textureSource, sprite, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, isDoubleSided);
 
-				collector.order(getZFixBatchingQueue()).submitModel(thickModel, state, poseStack, glintLayer, Integer.MAX_VALUE, 0, tintedColor, sprite, outlineColor, crumblingOverlay);
+				collector.order(getGlintBatchingQueue()).submitModel(thickModel, state, poseStack, glintLayer, Integer.MAX_VALUE, 0, tintedColor, sprite, outlineColor, crumblingOverlay);
+				collector.order(getGlintBatchingQueue()+1).submitModel(thickModel, state, poseStack, RenderTypes.entityGlint(), Integer.MAX_VALUE, 0, tintedColor, sprite, outlineColor, crumblingOverlay);
 			}
 
 			return InteractionResult.PASS;
@@ -214,8 +215,8 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 						HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
-						queueHolder.order(getZFixBatchingQueue()).submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
-						queueHolder.order(getZFixBatchingQueue()+1).submitModel(thickGlintZModel, s, matrixStack, Shaders.ARMOR_ENTITY_GLINT_FIX, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+						queueHolder.order(getGlintBatchingQueue()).submitModel(thickGlintZModel, s, matrixStack, glintZLayer, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
+						queueHolder.order(getGlintBatchingQueue()+1).submitModel(thickGlintZModel, s, matrixStack, Shaders.ARMOR_ENTITY_GLINT_FIX, light, overlay, tintColor, sprite, outlineColor, crumblingOverlayCommand);
 					}
 				}
 			}
@@ -236,15 +237,17 @@ public class EnchantmentGlintOutline implements ModInitializer {
 
 							HijackedModel thickColorModel = ModelHelper.getThickenedModel(model, layer -> Shaders.COLOR_CUTOUT_LAYER, scale);
 
-							queueHolder.submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.order(getColorBatchingQueue()).submitModel(thickColorModel, s, matrixStack, colorLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
 						}
 						else{
+							int tint = config.getOutlineColorAsInt(config.getOutlineColorOverrideOrDefault(override));
+
 							RenderType glintZLayer = RenderLayerHelper.renderLayerFromRenderLayerDoubleSided(garbageHackPatchLayer, GLINT_LAYERS, Shaders::createGlintRenderLayerNoCull, Shaders::createGlintRenderLayerCull, Shaders.GLINT_CUTOUT_LAYER, false);
 
 							HijackedModel thickGlintZModel = ModelHelper.getThickenedModel(model, layer -> Shaders.GLINT_CUTOUT_LAYER, scale);
 
-							queueHolder.submitModel(thickGlintZModel, s, matrixStack, glintZLayer, Integer.MAX_VALUE, 0, 0, sprite, outlineColor, crumblingOverlayCommand);
-							queueHolder.submitModel(thickGlintZModel, s, matrixStack, renderLayer, Integer.MAX_VALUE, 0, 0, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.order(getGlintBatchingQueue()).submitModel(thickGlintZModel, s, matrixStack, glintZLayer, Integer.MAX_VALUE, 0, tint, sprite, outlineColor, crumblingOverlayCommand);
+							queueHolder.order(getGlintBatchingQueue()+1).submitModel(thickGlintZModel, s, matrixStack, RenderTypes.entityGlint(), Integer.MAX_VALUE, 0, 0, sprite, outlineColor, crumblingOverlayCommand);
 						}
 					}
 				}

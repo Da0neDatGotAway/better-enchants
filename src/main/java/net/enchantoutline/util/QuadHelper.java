@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.Brightness;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class QuadHelper {
             QuadInstance qi = new QuadInstance();
             for (int v = 0; v < 4; v++) {
                 qi.setColor(v, colorTint);
-                qi.setLightCoords(v, Integer.MAX_VALUE);
+                qi.setLightCoords(v, Brightness.FULL_BRIGHT.pack());
             }
             qi.setOverlayCoords(0);
             for (BakedQuad q : quads) vc.putBakedQuad(pose, q, qi);
